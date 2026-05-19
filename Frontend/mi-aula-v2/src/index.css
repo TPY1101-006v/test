@@ -1,0 +1,33 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f1117;
+  --surface: #171b26;
+  --card: #1e2333;
+  --border: rgba(255,255,255,0.08);
+  --border-glow: rgba(99,179,237,0.3);
+  --accent: #63b3ed;
+  --accent2: #68d391;
+  --accent3: #f6ad55;
+  --warn: #fc8181;
+  --text: #e2e8f0;
+  --muted: #718096;
+  --mono: 'Space Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-pill: 20px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+input, select, button, textarea { font-family: var(--sans); }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }

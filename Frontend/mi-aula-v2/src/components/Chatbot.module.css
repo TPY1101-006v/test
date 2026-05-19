@@ -1,0 +1,126 @@
+.section {
+  background: var(--card);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 28px;
+}
+
+.title {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  background: rgba(99,179,237,0.15);
+  color: var(--accent);
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.5px;
+}
+
+.messages {
+  min-height: 100px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.msg {
+  font-size: 13px;
+  line-height: 1.55;
+  padding: 10px 12px;
+  border-radius: 10px;
+  max-width: 90%;
+  white-space: pre-wrap;
+}
+
+.bot {
+  background: rgba(99,179,237,0.08);
+  border: 0.5px solid rgba(99,179,237,0.2);
+  color: var(--text);
+  align-self: flex-start;
+}
+
+.user {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  color: var(--muted);
+  align-self: flex-end;
+}
+
+.typing {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  padding: 4px 8px;
+  align-self: flex-start;
+}
+
+.suggestions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.sugBtn {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  cursor: pointer;
+  border: 0.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.sugBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.input {
+  flex: 1;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus { border-color: var(--accent); }
+.input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.sendBtn {
+  padding: 9px 18px;
+  background: var(--accent);
+  color: #0f1117;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.sendBtn:hover:not(:disabled) { opacity: 0.85; }

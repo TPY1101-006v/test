@@ -1,0 +1,5 @@
+.app { max-width: 960px; margin: 0 auto; padding: 0 20px 48px; }
+.sectionLabel { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px; }
+.cardsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 28px; }
+.skeleton { background: var(--card); border: 0.5px solid var(--border); border-radius: var(--radius); height: 140px; animation: shimmer 1.5s infinite; }
+@keyframes shimmer { 0%,100%{opacity:.4} 50%{opacity:.7} }
