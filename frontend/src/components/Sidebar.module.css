@@ -1,0 +1,98 @@
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlayOpen{opacity:1;pointer-events:all}
+.sidebar{position:fixed;top:0;right:-320px;width:300px;height:100vh;background:var(--surface);border-left:.5px solid var(--border);z-index:101;transition:right .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.sidebarOpen{right:0}
+.sbTop{padding:24px 20px 0;flex:1;overflow-y:auto}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.title{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.closeBtn{width:30px;height:30px;border-radius:var(--radius-sm);background:var(--card);border:.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:20px;transition:color .2s}
+.closeBtn:hover{color:var(--text)}
+.menuItem{display:flex;align-items:center;gap:14px;padding:12px 10px;border-radius:10px;cursor:pointer;margin-bottom:4px;transition:background .15s;border:.5px solid transparent}
+.menuItem:hover{background:var(--card)}
+.menuActive{background:var(--card);border-color:var(--border-glow)}
+.menuIcon{width:34px;height:34px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;transition:transform .2s}
+.menuItem:hover .menuIcon{transform:scale(1.1)}
+.blue{background:rgba(99,179,237,.12);color:var(--accent)}
+.green{background:rgba(104,211,145,.12);color:var(--accent2)}
+.red{background:rgba(252,129,129,.12);color:var(--warn)}
+.gray{background:rgba(113,128,150,.12);color:var(--muted)}
+.menuLabel{font-size:14px;font-weight:500;color:var(--text)}
+.menuSub{font-size:11px;color:var(--muted);margin-top:2px}
+.panel{margin-top:16px;padding-bottom:8px}
+.panelTitle{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;border-bottom:.5px solid var(--border);padding-bottom:8px}
+.formLabel{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;margin-top:12px}
+.formInput{width:100%;background:var(--card);border:.5px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px;outline:none;transition:border-color .2s}
+.formInput:focus{border-color:var(--accent)}
+.formInput option{background:var(--card)}
+.saveBtn{width:100%;padding:10px;background:var(--accent);color:#0f1117;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;margin-top:14px;transition:opacity .2s}
+.saveBtn:hover{opacity:.85}
+.dlBtn{display:flex;align-items:center;gap:10px;width:100%;padding:11px 16px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;margin-bottom:8px;transition:background .15s}
+.dlBtn:disabled{opacity:.55;cursor:not-allowed}
+.dlPdf{background:rgba(252,129,129,.1);border:.5px solid rgba(252,129,129,.3);color:var(--warn)}
+.dlPdf:hover:not(:disabled){background:rgba(252,129,129,.18)}
+.dlCsv{background:rgba(104,211,145,.1);border:.5px solid rgba(104,211,145,.3);color:var(--accent2)}
+.dlCsv:hover:not(:disabled){background:rgba(104,211,145,.18)}
+.noAlerts{font-size:13px;color:var(--muted);text-align:center;padding:24px 0;font-family:var(--mono)}
+.alertItem{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:.5px solid var(--border)}
+.alertIcon{font-size:15px;flex-shrink:0;margin-top:1px}
+.alertInfo{flex:1;min-width:0}
+.alertSensor{font-size:12px;font-weight:600;color:var(--warn);font-family:var(--mono)}
+.alertMsg{font-size:11px;color:var(--muted);margin-top:2px}
+.alertTime{font-size:11px;color:var(--muted);font-family:var(--mono);flex-shrink:0}
+.aboutCard{background:var(--card);border-radius:10px;padding:14px;margin-bottom:10px;border:.5px solid var(--border)}
+.aboutName{font-size:13px;font-weight:600;color:var(--text)}
+.aboutRole{font-size:11px;color:var(--muted);margin-top:2px}
+.aboutDesc{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6}
+.version{font-size:11px;color:var(--muted);text-align:center;margin-top:16px;font-family:var(--mono)}
+.sbDivider{height:.5px;background:var(--border);margin:0 20px}
+.catZone{padding:16px 20px 24px;flex-shrink:0}
+.catBtn{width:100%;padding:10px 14px;border-radius:10px;background:var(--card);border:.5px solid var(--border);color:var(--muted);font-size:12px;font-family:var(--mono);cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s;letter-spacing:.5px}
+.catBtn:hover{border-color:rgba(246,173,85,.4);color:var(--amber)}
+.catPaw{font-size:16px;transition:transform .3s}
+.catBtn:hover .catPaw{transform:rotate(-15deg) scale(1.2)}
+.catModal{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.catCard{background:var(--surface);border:.5px solid var(--border);border-radius:20px;padding:28px 32px;text-align:center;max-width:300px;width:90%;animation:popIn .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(.8) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.catArt{font-size:13px;font-family:var(--mono);color:var(--accent);line-height:1.5;margin-bottom:16px;white-space:pre;letter-spacing:.5px}
+.catName{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.catDesc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.catClose{padding:8px 20px;background:var(--accent);color:#0f1117;border:none;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s}
+.catClose:hover{opacity:.85}
+.salaName {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  
+  .labelRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  
+  .labelRow .formLabel {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  
+  .helpIcon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: .5px solid var(--border);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+  }
+  
+  .helpIcon:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
