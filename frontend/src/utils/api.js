@@ -1,6 +1,5 @@
 import { SENSORS, API } from './constants'
 
-
 function mapUltimaMedicion(medicion) {
   const data = {}
   SENSORS.forEach(s => {
@@ -8,12 +7,14 @@ function mapUltimaMedicion(medicion) {
   })
   return data
 }
+
 function formatTime(fechaHora) {
   return new Date(fechaHora).toLocaleTimeString('es-CL', {
     hour: '2-digit',
     minute: '2-digit',
   })
 }
+
 function buildHistoryFromMediciones(mediciones) {
   const ordenadas = [...mediciones].reverse() // antigua → nueva (izq → der en gráfico)
   const history = {}
@@ -47,27 +48,38 @@ export async function fetchSensorData() {
   }
 }
 
-// POST /api/chat — replace body with real fetch() for production
+// POST /api/chat — Formatea las alertas reales obtenidas de la Base de Datos
 export async function sendChatMessage(message, sensorData, alerts, conditions) {
-  await new Promise(r => setTimeout(r, 850 + Math.random() * 400))
+  await new Promise(r => setTimeout(r, 600 + Math.random() * 300))
   const low = message.toLowerCase()
 
-  if (low.includes('resumen') || low.includes('día') || low.includes('dia')) {
+  // Respuesta para "resumen", "estado" o "dia"
+  if (low.includes('resumen') || low.includes('día') || low.includes('dia') || low.includes('estado')) {
     const summary = SENSORS.map(s => {
       const v = sensorData[s.key]
-      const f = s.key === 'lux' || s.key === 'ppm' ? Math.round(v) : Number(v).toFixed(1)
-      return `${s.label}: ${f}${s.unit}`
-    }).join(' · ')
-    return `📊 Resumen del día: ${summary}. Se registraron ${alerts.length} alertas. Condiciones ${alerts.length < 3 ? 'óptimas para el aprendizaje' : 'con variaciones que requieren atención'}.`
+      const f = v !== undefined ? (s.key === 'lux' || s.key === 'ppm' ? Math.round(v) : Number(v).toFixed(1)) : '—'
+      return `• ${s.label}: ${f} ${s.unit}`
+    }).join('\n')
+    
+    return `📊 **Estado actual de mi-aula:**\n\n${summary}\n\nHistorial: El sistema cuenta con **${alerts.length}** alertas guardadas en la base de datos.`
   }
 
-  if (low.includes('alerta')) {
-    if (!alerts.length) return '✅ Sin alertas registradas. Todas las condiciones están dentro del rango ideal.'
-    const recent = alerts.slice(0, 3).map(a => `${a.sensor} a las ${a.time}`).join(', ')
-    return `🚨 Se han registrado ${alerts.length} alertas. Las más recientes: ${recent}.`
+  // Respuesta para "alerta", "historial" o "registro"
+  if (low.includes('alerta') || low.includes('historial') || low.includes('registro')) {
+    if (!alerts || alerts.length === 0) {
+      return '✅ **Registro Limpio:** No se registran alertas en la base de datos. Todos los parámetros ambientales están dentro del rango ideal.'
+    }
+    
+    // Tomamos las últimas 5 alertas de la base de datos y las ordenamos hacia abajo con saltos de línea
+    const listaAlertas = alerts.slice(0, 5).map((a, index) => {
+      const comportamiento = a.high ? 'Por encima' : 'Por debajo'
+      return `${index + 1}. 🚨 **${a.sensor}**: ${comportamiento} del rango (${a.value} ${a.unit}) — 🕒 ${a.time}`
+    }).join('\n')
+
+    return `🔔 **Historial de Alertas (Últimos registros en Base de Datos):**\n\n${listaAlertas}\n\n*Mostrando las 5 más recientes de un total de ${alerts.length}.*`
   }
 
-  return `💬 Los sensores muestran valores ${alerts.length > 2 ? 'con algunas variaciones' : 'estables'}. ¿Te explico algún parámetro en detalle?`
+  return `💬 Hola, soy Byte. Puedo ayudarte con el estado de la sala. Prueba haciendo clic en los botones de sugerencias o escribe:\n\n• **"resumen"**: Para ver cómo están los sensores ahora.\n• **"historial"**: Para listar los últimos incidentes de la BD.`
 }
 
 export function generateCSV(history) {
@@ -98,6 +110,7 @@ export async function fetchSalaConditions() {
     ventilation: sala.tipoDeVentilacion,
   }
 }
+
 export async function updateSalaConditions(id, conditions) {
   const body = {
     cantidadEstudiantes: Number(conditions.students),
@@ -115,5 +128,28 @@ export async function updateSalaConditions(id, conditions) {
   })
 
   if (!response.ok) throw new Error(`Error HTTP ${response.status}`)
+  return response.json()
+}
+
+// Métodos de comunicación con la base de datos a través de Spring Boot
+export async function fetchAlerts() {
+  const response = await fetch('http://localhost:8080/api/alertas')
+  if (!response.ok) {
+    throw new Error('Error al obtener el historial de alertas')
+  }
+  return response.json()
+}
+
+export async function saveAlert(alerta) {
+  const response = await fetch('http://localhost:8080/api/alertas', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(alerta)
+  })
+  if (!response.ok) {
+    throw new Error('Error al guardar la alerta en el servidor')
+  }
   return response.json()
 }

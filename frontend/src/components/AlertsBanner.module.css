@@ -1,0 +1,84 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border);
+  margin-bottom: 18px;
+  font-family: var(--sans);
+  font-size: 13px;
+}
+
+.ok {
+  background: rgba(104, 211, 145, 0.08);
+  border-color: rgba(104, 211, 145, 0.3);
+  color: var(--accent2);
+}
+
+.alerta {
+  background: rgba(246, 173, 85, 0.10);
+  border-color: rgba(246, 173, 85, 0.4);
+  color: var(--accent3);
+}
+
+.critica {
+  background: rgba(252, 129, 129, 0.12);
+  border-color: var(--warn);
+  color: var(--warn);
+  animation: pulseBg 2s ease-in-out infinite;
+}
+
+@keyframes pulseBg {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(252, 129, 129, 0); }
+  50%      { box-shadow: 0 0 0 4px rgba(252, 129, 129, 0.15); }
+}
+
+.icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.list { flex: 1; min-width: 0; }
+
+.title {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  opacity: 0.85;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 0.5px solid currentColor;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-family: var(--mono);
+}
+
+.chipCritica {
+  background: rgba(252, 129, 129, 0.18);
+}
+
+.arrow {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.text {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}

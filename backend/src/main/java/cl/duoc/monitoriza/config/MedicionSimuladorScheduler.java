@@ -42,7 +42,6 @@ public class MedicionSimuladorScheduler {
             return;
         }
 
-
         Nodo nodo = nodoRepository.findAll().get(0);
         Medicion medicion = generarMedicionFicticia(nodo);
         medicionRepository.save(medicion);
@@ -58,11 +57,13 @@ public class MedicionSimuladorScheduler {
         boolean enClase = hora >= 8 && hora < 17;
 
         double temperatura = redondear1(23.5 + (Math.random() * 2.5));       // 23.5 - 26.0
-        double humedad     = redondear1(38.0 + (Math.random() * 10.0));       // 38 - 48
+        double humedad     = redondear1(38.0 + (Math.random() * 10.0));      // 38 - 48
         double db          = redondear1(enClase ? 35.0 + Math.random() * 12 : 30.0 + Math.random() * 4);
         double lux         = Math.round(enClase ? 350 + Math.random() * 120 : 20 + Math.random() * 30);
         double eco2        = Math.round(enClase ? 550 + Math.random() * 250 : 420 + Math.random() * 80);
-        double tvoc        = redondear2(enClase ? 0.18 + Math.random() * 0.25 : 0.10 + Math.random() * 0.10);
+        
+        // ✨ CAMBIO: Ahora TVOC genera valores entre 150-380 en clases y 100-150 fuera de horario
+        double tvoc        = Math.round(enClase ? 150 + Math.random() * 230 : 100 + Math.random() * 50);
 
         Medicion m = new Medicion(temperatura, humedad, db, lux, eco2, tvoc, nodo);
         m.setFechaHora(LocalDateTime.now());

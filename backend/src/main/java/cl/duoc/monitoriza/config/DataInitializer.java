@@ -21,16 +21,14 @@ import cl.duoc.monitoriza.repository.MedicionRepository;
 import cl.duoc.monitoriza.repository.NodoRepository;
 import cl.duoc.monitoriza.repository.SalaRepository;
 
-
-
 @Component
 public class DataInitializer implements CommandLineRunner {
-
 
     private final InstitucionRepository institucionRepository;
     private final SalaRepository salaRepository;
     private final NodoRepository nodoRepository;
     private final MedicionRepository medicionRepository;
+    
     @Value("${app.seed.historico.enabled:true}")
     private boolean historicoEnabled;
     @Value("${app.seed.historico.desde}")
@@ -45,7 +43,6 @@ public class DataInitializer implements CommandLineRunner {
     private String horaFin;
     @Value("${app.seed.historico.solo-laboral:true}")
     private boolean soloLaboral;
-
 
     public DataInitializer(InstitucionRepository institucionRepository, SalaRepository salaRepository, NodoRepository nodoRepository, MedicionRepository medicionRepository) {
         this.institucionRepository = institucionRepository;
@@ -72,7 +69,6 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("[Seed] Datos iniciales ya existen.");
         }
 
-
         if (medicionRepository.count() == 0 && historicoEnabled) {
             int total = generarHistoricoMensual(nodo);
             System.out.println("[Seed] Histórico mensual creado: " + total + " mediciones.");
@@ -80,6 +76,7 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("[Seed] Datos iniciales ya existen.");
         }
     }
+    
     private int generarHistoricoMensual(Nodo nodo) {
         LocalDate fechaDesde = LocalDate.parse(desde);
         LocalDate fechaHasta = LocalDate.parse(hasta);
@@ -143,7 +140,9 @@ public class DataInitializer implements CommandLineRunner {
         double db          = redondear1(32.0 + factorClase * ruido(random, 0, 14));
         double lux         = Math.round(300 + factorClase * ruido(random, 0, 140));
         double eco2        = Math.round(460 + factorClase * ruido(random, 0, 260));
-        double tvoc        = redondear2(0.12 + factorClase * ruido(random, 0, 0.22));
+        
+        // ✨ CAMBIO: Ahora TVOC usa Math.round y da valores en ppb (ej. 150 a 300)
+        double tvoc        = Math.round(150 + factorClase * ruido(random, 0, 150));
 
         if (random.nextDouble() < 0.06) {
             return inyectarOutlier(temperatura, humedad, db, lux, eco2, tvoc, random, nodo);
@@ -164,7 +163,8 @@ public class DataInitializer implements CommandLineRunner {
             case 2 -> db = redondear1(52.0 + ruido(random, 0, 6));
             case 3 -> lux = Math.round(250 + ruido(random, 0, 40));
             case 4 -> eco2 = Math.round(820 + ruido(random, 0, 120));
-            case 5 -> tvoc = redondear2(0.45 + ruido(random, 0, 0.1));
+            // ✨ CAMBIO: Alerta crítica de TVOC (arriba de 500)
+            case 5 -> tvoc = Math.round(550 + ruido(random, 0, 100));
         }
 
         return new Medicion(temperatura, humedad, db, lux, eco2, tvoc, nodo);
@@ -183,6 +183,7 @@ public class DataInitializer implements CommandLineRunner {
         return Math.round(v * 10.0) / 10.0;
     }
 
+    // Nota: Dejé esta función porque quizá la usa otro módulo, aunque ya no la usamos en TVOC
     private double redondear2(double v) {
         return Math.round(v * 100.0) / 100.0;
     }

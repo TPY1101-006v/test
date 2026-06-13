@@ -12,7 +12,7 @@ export default function Chatbot({ sensorData, alerts }) {
     {
       id: 0,
       type: 'bot',
-      text: '👋 Hola, soy tu asistente de Monitoriza. Puedo darte el resumen del día, informarte sobre alertas o responder tus preguntas sobre el ambiente del aula.',
+      text: '👋 Hola, soy tu asistente de mi-aula. Puedo darte el resumen del día, informarte sobre las alertas reales en la BD o responder tus preguntas sobre el ambiente.',
     },
   ])
   const [input, setInput] = useState('')
@@ -31,6 +31,7 @@ export default function Chatbot({ sensorData, alerts }) {
     setTyping(true)
 
     try {
+      // Le pasamos las alertas que vienen desde la base de datos (App.jsx)
       const reply = await sendChatMessage(text, sensorData, alerts)
       setMessages(prev => [...prev, { id: Date.now() + 1, type: 'bot', text: reply }])
     } catch {
@@ -46,13 +47,18 @@ export default function Chatbot({ sensorData, alerts }) {
   return (
     <div className={styles.section}>
       <div className={styles.title}>
-        asistente IA
+        Asistente IA
         <span className={styles.badge}>CONECTADO</span>
       </div>
 
       <div className={styles.messages}>
         {messages.map(msg => (
-          <div key={msg.id} className={`${styles.msg} ${styles[msg.type]}`}>
+          // El estilo inline o el CSS con pre-wrap hace que se respeten las listas estructuradas
+          <div 
+            key={msg.id} 
+            className={`${styles.msg} ${styles[msg.type]}`}
+            style={{ whiteSpace: 'pre-wrap' }} 
+          >
             {msg.text}
           </div>
         ))}

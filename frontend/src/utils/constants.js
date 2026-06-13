@@ -30,7 +30,7 @@ export const SENSORS = [
     ideal: 35,      // ≤35 dBA — por encima afecta atención y memoria
     min: 30,
     max: 50,
-    color: '#f6ad55',
+    color: '#008ba3',
     description: 'Ruido de fondo — máximo recomendado 35 dBA',
   },
   {
@@ -41,7 +41,7 @@ export const SENSORS = [
     ideal: 400,     // 300–500 lx mejora alerta y velocidad de lectura
     min: 300,
     max: 500,
-    color: '#fbd38d',
+    color: '#e7e300',
     description: 'Iluminación óptima para tareas de aula (300–500 lx)',
   },
   
@@ -54,7 +54,7 @@ export const SENSORS = [
     ideal: 600, 
     min: 400,
     max: 800,
-    color: '#fbd38d',
+    color: '#9145ed',
     description: 'Concentraciones altas de CO2 reducen el rendimiento académico y puede favorecer el contagio de enfermedades',
   },
   
@@ -67,7 +67,7 @@ export const SENSORS = [
     ideal: 200,
     min: 0,
     max: 500,
-    color: '#fbd38d',
+    color: '#fa3bc4',
     description: 'Concentraciones altas de TVOC reducen la concentración y el rendimiento cognitivo',
   },
 ]
@@ -95,4 +95,24 @@ export const API = {
   chat:       'http://ESP8266_IP/api/chat',        // POST { message, conditions } → { reply }
   conditions: 'http://ESP8266_IP/api/conditions',  // POST { students, size, ... } → { ok }
 */
+}
+// ====== FUNCIONES DE AYUDA (OBLIGATORIAS PARA EL PARCHE) ======
+
+export function getSensor(key) {
+  return SENSORS.find(s => s.key === key)
+}
+
+export function isOutOfRange(key, value) {
+  const s = getSensor(key)
+  if (!s || value === null || value === undefined || Number.isNaN(value)) return false
+  return value < s.min || value > s.max
+}
+
+export function severity(key, value) {
+  const s = getSensor(key)
+  if (!s || !isOutOfRange(key, value)) return 'ok'
+  // Si el CO2 pasa de 1500 o el ruido de 60, es una alerta crítica, si no, es advertencia
+  if (key === 'eco2' && value > 1500) return 'critica'
+  if (key === 'db' && value > 60) return 'critica'
+  return 'advertencia'
 }

@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from 'react'
 import { fetchSalaConditions, updateSalaConditions, downloadReportFromBackend } from '../utils/api'
-import { SENSORS,VENTILATION_TYPES,VENTILATION_HELP  } from '../utils/constants'
+import { SENSORS, VENTILATION_TYPES, VENTILATION_HELP } from '../utils/constants'
 import styles from './Sidebar.module.css'
 
-
-
-
 const PANELS = [
-  { key: 'descarga',  emoji: '📥', cls: 'blue',  label: 'Descargar datos',      sub: 'Informe y CSV' },
-  { key: 'sala',      emoji: '🏫', cls: 'green', label: 'Condiciones de sala',  sub: 'Configurar aula' },
+  { key: 'descarga',  emoji: '📥', cls: 'blue',  label: 'Descargar datos',    sub: 'Informe y CSV' },
+  { key: 'sala',      emoji: '🏫', cls: 'green', label: 'Condiciones de sala', sub: 'Configurar aula' },
   { key: 'historial', emoji: '🔔', cls: 'red',   label: 'Historial de alertas', sub: 'Eventos fuera de rango' },
   { key: 'nosotros',  emoji: '👥', cls: 'gray',  label: 'Sobre nosotros',       sub: 'El equipo Monitoriza' },
 ]
 
+// Diseños de gatitos ASCII estilizados y limpios
 const CATS = [
-  `  /\\_____/\\\n (  o   o  )\n (  =   =  )\n  (  ___  )\n   \\_____/`,
-  `    /\\    /\\\n   (  oo  )\n   (=    =)\n    \\~~~~~/\n     \\_V_/`,
-  `   /\\___/\\\n  ( ^ . ^ )\n  (       )\n   \\~~~~~/ `,
-  `  /\\   /\\\n ( >.< )\n (  =  )\n  \\_U_/`,
-  ` /\\_/\\  /\\_/\\\n( o.o )( o.o )\n > ^ <  > ^ <`,
+`  /\\_/\\  
+ (  . . ) 
+ =  > < = 
+ /      \\ 
+(  || || )`,
+
+`  /\\_/\\  
+ (=^•^=) 
+ (     ) 
+  |   |  
+(___\\__)`,
+
+`  /\\_/\\  
+ ( - . - ) zZ
+ (  " "  ) 
+ (_______)`
 ]
 
 function generateReport(sensorData, alerts) {
@@ -29,38 +38,56 @@ function generateReport(sensorData, alerts) {
     const out = v !== undefined && (v < s.min || v > s.max)
     return `  ${s.label}: ${f} ${s.unit}  ${out ? '⚠ FUERA DE RANGO' : '✓ OK'}`
   }).join('\n')
+  
   const alertLines = alerts.length
-    ? alerts.slice(0, 5).map(a => `  [${a.time}] ${a.sensor}: ${a.value}${a.unit}`).join('\n')
+    ? alerts.slice(0, 5).map(a => `  [${a.time}] ${a.sensor || a.label}: ${a.value}${a.unit}`).join('\n')
     : '  Sin alertas registradas'
+    
   return `Monitoriza — INFORME AMBIENTAL\nGenerado: ${now}\n${'─'.repeat(40)}\n\nLECTURAS ACTUALES:\n${rows}\n\nALERTAS RECIENTES:\n${alertLines}\n\n${'─'.repeat(40)}\nMonitoriza v2.0.0`
 }
 
-  export default function Sidebar({ open, onClose, alerts, sensorData, history }) {
-    const [conditions, setConditions] = useState(null)
-    const [conditionsLoading, setConditionsLoading] = useState(true)
-    const [conditionsError, setConditionsError] = useState(null)
-    const [saved, setSaved] = useState(false)
-    const [saving, setSaving] = useState(false)
-    const [dlState, setDlState] = useState({ pdf: 'idle', csv: 'idle' })
-    const [catOpen, setCatOpen] = useState(false)
-    const [catArt, setCatArt] = useState('')
-    const [activePanel, setActivePanel] = useState('descarga')
-    useEffect(() => {
-      setConditionsLoading(true)
-      setConditionsError(null)
-      fetchSalaConditions()
-        .then(data => setConditions(data))
-        .catch(err => {
-          console.error('Error cargando condiciones de sala:', err)
-          setConditionsError('No se pudieron cargar las condiciones de la sala')
-          setConditions(null)
-        })
-        .finally(() => setConditionsLoading(false))
-    }, [])
+export default function Sidebar({ open, onClose, alerts, activeAlerts, sensorData, history }) {
+  const [conditions, setConditions] = useState(null)
+  const [conditionsLoading, setConditionsLoading] = useState(true)
+  const [conditionsError, setConditionsError] = useState(null)
+  const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [dlState, setDlState] = useState({ pdf: 'idle', csv: 'idle' })
+  const [catOpen, setCatOpen] = useState(false)
+  const [catArt, setCatArt] = useState('')
+  const [activePanel, setActivePanel] = useState('descarga')
+  
+  // Contador para el easter egg del gato
+  const [catClicks, setCatClicks] = useState(0)
 
-  function openCat() {
-    setCatArt(CATS[Math.floor(Math.random() * CATS.length)])
-    setCatOpen(true)
+  useEffect(() => {
+    setConditionsLoading(true)
+    setConditionsError(null)
+    fetchSalaConditions()
+      .then(data => setConditions(data))
+      .catch(err => {
+        console.error('Error cargando condiciones de sala:', err)
+        setConditionsError('No se pudieron cargar las condiciones de la sala')
+        setConditions(null)
+      })
+      .finally(() => setConditionsLoading(false))
+  }, [])
+
+  // Al cerrar el menú lateral por completo, reiniciamos los clics del gato
+  useEffect(() => {
+    if (!open) setCatClicks(0)
+  }, [open])
+
+  function handleCatClick() {
+    setCatClicks(prev => {
+      const nuevoConteo = prev + 1
+      if (nuevoConteo >= 10) {
+        setCatArt(CATS[Math.floor(Math.random() * CATS.length)])
+        setCatOpen(true)
+        return 0 
+      }
+      return nuevoConteo
+    })
   }
 
   function downloadPDF() {
@@ -91,6 +118,7 @@ function generateReport(sensorData, alerts) {
     }
     setTimeout(() => setDlState(s => ({ ...s, csv: 'idle' })), 2500)
   }
+
   async function saveConditions() {
     if (!conditions?.idSala) {
       alert('Aún no se cargaron los datos de la sala')
@@ -139,115 +167,123 @@ function generateReport(sensorData, alerts) {
             </div>
           )}
 
-{activePanel === 'sala' && (
-  <div className={styles.panel}>
-    <div className={styles.panelTitle}>condiciones de sala</div>
+          {activePanel === 'sala' && (
+            <div className={styles.panel}>
+              <div className={styles.panelTitle}>condiciones de sala</div>
 
-    {conditionsLoading && (
-      <div className={styles.noAlerts}>Cargando condiciones...</div>
-    )}
+              {conditionsLoading && <div className={styles.noAlerts}>Cargando condiciones...</div>}
+              {conditionsError && <div className={styles.noAlerts}>{conditionsError}</div>}
 
-    {conditionsError && (
-      <div className={styles.noAlerts}>{conditionsError}</div>
-    )}
+              {!conditionsLoading && !conditionsError && conditions && (
+                <>
+                  <div className={styles.salaName}>{conditions.nombre}</div>
 
-    {!conditionsLoading && !conditionsError && conditions && (
-      <>
-        <div className={styles.salaName}>{conditions.nombre}</div>
+                  <label className={styles.formLabel}>Tamaño del aula (m²)</label>
+                  <input
+                    className={styles.formInput}
+                    type="number"
+                    min="10"
+                    value={conditions.size}
+                    onChange={e => setConditions(c => ({ ...c, size: e.target.value }))}
+                  />
 
-        <label className={styles.formLabel}>Tamaño del aula (m²)</label>
-        <input
-          className={styles.formInput}
-          type="number"
-          min="10"
-          value={conditions.size}
-          onChange={e => setConditions(c => ({ ...c, size: e.target.value }))}
-        />
+                  <label className={styles.formLabel}>Cantidad de estudiantes</label>
+                  <input
+                    className={styles.formInput}
+                    type="number"
+                    min="1"
+                    value={conditions.students}
+                    onChange={e => setConditions(c => ({ ...c, students: e.target.value }))}
+                  />
 
-        <label className={styles.formLabel}>Cantidad de estudiantes</label>
-        <input
-          className={styles.formInput}
-          type="number"
-          min="1"
-          value={conditions.students}
-          onChange={e => setConditions(c => ({ ...c, students: e.target.value }))}
-        />
+                  <label className={styles.formLabel}>Cantidad de ventanas</label>
+                  <input
+                    className={styles.formInput}
+                    type="number"
+                    min="0"
+                    value={conditions.windows}
+                    onChange={e => setConditions(c => ({ ...c, windows: e.target.value }))}
+                  />
 
-        <label className={styles.formLabel}>Cantidad de ventanas</label>
-        <input
-          className={styles.formInput}
-          type="number"
-          min="0"
-          value={conditions.windows}
-          onChange={e => setConditions(c => ({ ...c, windows: e.target.value }))}
-        />
+                  <label className={styles.formLabel}>Aire acondicionado</label>
+                  <select
+                    className={styles.formInput}
+                    value={conditions.ac}
+                    onChange={e => setConditions(c => ({ ...c, ac: e.target.value }))}
+                  >
+                    <option value="no">Sin A/C</option>
+                    <option value="si">Con A/C</option>
+                  </select>
 
-        <label className={styles.formLabel}>Aire acondicionado</label>
-        <select
-          className={styles.formInput}
-          value={conditions.ac}
-          onChange={e => setConditions(c => ({ ...c, ac: e.target.value }))}
-        >
-          <option value="no">Sin A/C</option>
-          <option value="si">Con A/C</option>
-        </select>
+                  <label className={styles.formLabel}>Piso del edificio</label>
+                  <input
+                    className={styles.formInput}
+                    type="number"
+                    min="1"
+                    value={conditions.floor}
+                    onChange={e => setConditions(c => ({ ...c, floor: e.target.value }))}
+                  />
 
-        <label className={styles.formLabel}>Piso del edificio</label>
-        <input
-          className={styles.formInput}
-          type="number"
-          min="1"
-          value={conditions.floor}
-          onChange={e => setConditions(c => ({ ...c, floor: e.target.value }))}
-        />
+                  <div className={styles.labelRow}>
+                    <label className={styles.formLabel}>Tipo de ventilación</label>
+                    <span
+                      className={styles.helpIcon}
+                      title={`Ventilación cruzada: ${VENTILATION_HELP.cruzada}\nVentilación unilateral: ${VENTILATION_HELP.unilateral}\nSin ventilación: ${VENTILATION_HELP.ninguna}`}
+                    >
+                      ?
+                    </span>
+                  </div>
+                  <select
+                    className={styles.formInput}
+                    value={conditions.ventilation}
+                    onChange={e => setConditions(c => ({ ...c, ventilation: e.target.value }))}
+                  >
+                    {VENTILATION_TYPES.map(v => (
+                      <option key={v.value} value={v.value}>{v.label}</option>
+                    ))}
+                  </select>
 
-        <div className={styles.labelRow}>
-          <label className={styles.formLabel}>Tipo de ventilación</label>
-          <span
-            className={styles.helpIcon}
-            title={`Ventilación cruzada: ${VENTILATION_HELP.cruzada}\nVentilación unilateral: ${VENTILATION_HELP.unilateral}\nSin ventilación: ${VENTILATION_HELP.ninguna}`}
-          >
-            ?
-          </span>
-        </div>
-        <select
-          className={styles.formInput}
-          value={conditions.ventilation}
-          onChange={e => setConditions(c => ({ ...c, ventilation: e.target.value }))}
-        >
-          {VENTILATION_TYPES.map(v => (
-            <option key={v.value} value={v.value}>{v.label}</option>
-          ))}
-        </select>
-
-        <button
-          className={styles.saveBtn}
-          onClick={saveConditions}
-          disabled={saving}
-        >
-          {saving ? 'Guardando...' : saved ? '✓ Guardado' : 'Guardar condiciones'}
-        </button>
-      </>
-    )}
-  </div>
-)}
+                  <button className={styles.saveBtn} onClick={saveConditions} disabled={saving}>
+                    {saving ? 'Guardando...' : saved ? '✓ Guardado' : 'Guardar condiciones'}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
 
           {activePanel === 'historial' && (
             <div className={styles.panel}>
               <div className={styles.panelTitle}>historial de alertas</div>
-              {alerts.length === 0
-                ? <div className={styles.noAlerts}>sin alertas registradas</div>
-                : alerts.slice(0, 15).map(a => (
-                  <div key={a.id} className={styles.alertItem}>
-                    <span className={styles.alertIcon}>⚠️</span>
-                    <div className={styles.alertInfo}>
-                      <div className={styles.alertSensor}>{a.sensor}</div>
-                      <div className={styles.alertMsg}>{a.high ? 'Por encima' : 'Por debajo'} del rango — {a.value} {a.unit}</div>
+              
+              {(!activeAlerts || activeAlerts.length === 0) && alerts.length === 0 ? (
+                <div className={styles.noAlerts}>sin alertas registradas</div>
+              ) : (
+                <>
+                  {/* Renderizado de alertas activas inmediatas */}
+                  {activeAlerts && activeAlerts.map(a => (
+                    <div key={`live-${a.sensorKey}`} className={styles.alertItem} style={{ borderLeft: '3px solid var(--warn)' }}>
+                      <span className={styles.alertIcon}>🚨</span>
+                      <div className={styles.alertInfo}>
+                        <div className={styles.alertSensor}>{a.label}</div>
+                        <div className={styles.alertMsg}>{a.high ? 'Por encima' : 'Por debajo'} del rango — <strong>{a.value} {a.unit}</strong></div>
+                      </div>
+                      <div className={styles.alertTime} style={{ color: 'var(--warn)', fontWeight: 'bold' }}>LIVE</div>
                     </div>
-                    <div className={styles.alertTime}>{a.time}</div>
-                  </div>
-                ))
-              }
+                  ))}
+
+                  {/* Renderizado del historial guardado */}
+                  {alerts.slice(0, 15).map(a => (
+                    <div key={a.id} className={styles.alertItem}>
+                      <span className={styles.alertIcon}>⚠️</span>
+                      <div className={styles.alertInfo}>
+                        <div className={styles.alertSensor}>{a.sensor || a.label}</div>
+                        <div className={styles.alertMsg}>{a.high ? 'Por encima' : 'Por debajo'} del rango — {a.value} {a.unit}</div>
+                      </div>
+                      <div className={styles.alertTime}>{a.time}</div>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           )}
 
@@ -271,9 +307,11 @@ function generateReport(sensorData, alerts) {
 
         <div className={styles.sbDivider} />
         <div className={styles.catZone}>
-          <button className={styles.catBtn} onClick={openCat}>
+          <button className={styles.catBtn} onClick={handleCatClick}>
             <span className={styles.catPaw}>🐾</span>
-            <span>¿quién anda por ahí?</span>
+            <span>
+              {catClicks > 0 ? `¡Presiona ${10 - catClicks} veces más!` : '¿quién anda por ahí?'}
+            </span>
           </button>
         </div>
       </div>
@@ -283,7 +321,7 @@ function generateReport(sensorData, alerts) {
           <div className={styles.catCard} onClick={e => e.stopPropagation()}>
             <pre className={styles.catArt}>{catArt}</pre>
             <div className={styles.catName}>Byte</div>
-            <div className={styles.catDesc}>Guardián oficial de Monitoriza.<br />Monitorea que todo esté bien desde su rincón favorito.</div>
+            <div className={styles.catDesc}>Guardián oficial de mi-aula.<br />Monitorea que todo esté bien desde su rincón favorito.</div>
             <button className={styles.catClose} onClick={() => setCatOpen(false)}>hasta luego, Byte 👋</button>
           </div>
         </div>

@@ -1,6 +1,36 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { fetchSensorData } from '../utils/api'
-import { SENSORS, UPDATE_INTERVAL } from '../utils/constants'
+import { SENSORS, UPDATE_INTERVAL, isOutOfRange, severity } from '../utils/constants'
+
+const MAX_ALERTS = 50
+const RETRY_SECONDS = 5
+
+// Función para construir alertas reales cuando cambia la medición
+function buildAlerts(latest, lastFechaHora, prevSnapshot) {
+  const time = new Date(lastFechaHora).toLocaleTimeString('es-CL', {
+    hour: '2-digit', minute: '2-digit',
+  })
+  const nuevas = []
+  SENSORS.forEach(s => {
+    const v = latest[s.key]
+    if (v === null || v === undefined || Number.isNaN(v)) return
+    if (!isOutOfRange(s.key, v)) return
+    if (prevSnapshot && prevSnapshot[s.key] === v) return // Evita duplicados si es el mismo valor
+    
+    nuevas.push({
+      id:        `${lastFechaHora}-${s.key}`,
+      sensor:    s.label,
+      sensorKey: s.key,
+      value:     s.key === 'lux' || s.key === 'eco2' ? Math.round(v) : Number(v).toFixed(1),
+      unit:      s.unit,
+      high:      v > s.max,
+      severity:  severity(s.key, v),
+      time,
+      range:     `${s.min}–${s.max} ${s.unit}`,
+    })
+  })
+  return nuevas
+}
 
 export function useSensors() {
   const [values, setValues]   = useState({})
@@ -8,16 +38,11 @@ export function useSensors() {
   const [alerts, setAlerts]   = useState([])
   const [countdown, setCountdown] = useState(UPDATE_INTERVAL)
   const [loading, setLoading] = useState(true)
+  
   const nextUpdateAtRef = useRef(null)
-  const lastFechaRef = useRef(null)
-  const fetchingRef = useRef(false)
-
-  const RETRY_SECONDS = 5
-
-  const isOutOfRange = (key, val) => {
-    const s = SENSORS.find(x => x.key === key)
-    return s && (val < s.min || val > s.max)
-  }
+  const lastFechaRef    = useRef(null)
+  const prevValuesRef   = useRef({})
+  const fetchingRef     = useRef(false)
 
   const refresh = useCallback(async () => {
     if (fetchingRef.current) return
@@ -25,23 +50,24 @@ export function useSensors() {
     try {
       const { latest, history: apiHistory, lastFechaHora } = await fetchSensorData()
       const esNueva = lastFechaHora !== lastFechaRef.current
-  
-      setValues(latest)
-      setHistory(apiHistory)
-      // ... (la lógica de alertas que ya tienes, sin cambios)
-  
-      lastFechaRef.current = lastFechaHora
-  
+
+      setValues(latest || {})
+      setHistory(apiHistory || {})
+
       if (esNueva) {
-        // próxima medición = la última + intervalo
+        const nuevas = buildAlerts(latest || {}, lastFechaHora, prevValuesRef.current)
+        if (nuevas.length) {
+          setAlerts(prev => [...nuevas, ...prev].slice(0, MAX_ALERTS))
+        }
+        prevValuesRef.current   = latest || {}
+        lastFechaRef.current    = lastFechaHora
         nextUpdateAtRef.current = new Date(lastFechaHora).getTime() + UPDATE_INTERVAL * 1000
       } else {
-        // el backend todavía no inserta la nueva → reintentar pronto
         nextUpdateAtRef.current = Date.now() + RETRY_SECONDS * 1000
       }
     } catch (err) {
       console.error('Error fetching sensor data:', err)
-      nextUpdateAtRef.current = Date.now() + RETRY_SECONDS * 1000  // no congelar la barra si falló la red
+      nextUpdateAtRef.current = Date.now() + RETRY_SECONDS * 1000
     } finally {
       fetchingRef.current = false
       setLoading(false)
@@ -60,6 +86,19 @@ export function useSensors() {
     return () => clearInterval(iv)
   }, [refresh])
 
-  return { values, history, alerts, countdown, loading, isOutOfRange }
-}
+  // Alertas dinámicas "activas" en el momento exacto
+  const activeAlerts = SENSORS
+    .map(s => ({ sensor: s, value: values[s.key] }))
+    .filter(({ sensor, value }) => isOutOfRange(sensor.key, value))
+    .map(({ sensor, value }) => ({
+      sensorKey: sensor.key,
+      label:     sensor.label,
+      value:     sensor.key === 'lux' || sensor.key === 'eco2' ? Math.round(value) : Number(value).toFixed(1),
+      unit:      sensor.unit,
+      range:     `${sensor.min}–${sensor.max} ${sensor.unit}`,
+      severity:  severity(sensor.key, value),
+      high:      value > sensor.max,
+    }))
 
+  return { values, history, alerts, activeAlerts, countdown, loading, isOutOfRange }
+}
