@@ -32,7 +32,6 @@ public class Sala {
     public Sala() {
     }
 
-    
     public Sala(String nombre, Double m2, int cantidadEstudiantes, int cantidadVentanas, 
         Institucion institucion, String aireAcondicionado, String tipoDeVentilacion, int numeroPiso) {
     this.nombre = nombre;
@@ -45,6 +44,17 @@ public class Sala {
     this.numeroPiso = numeroPiso;
 }
 
+    public Sala(Long idSala, String nombre, Double m2, int cantidadEstudiantes, int cantidadVentanas, 
+            boolean aireAcondicionado, String tipoDeVentilacion, int numeroPiso) {
+        this.idSala = idSala;
+        this.nombre = nombre;
+        this.m2 = m2;
+        this.cantidadEstudiantes = cantidadEstudiantes;
+        this.cantidadVentanas = cantidadVentanas;
+        this.aireAcondicionado = String.valueOf(aireAcondicionado);
+        this.tipoDeVentilacion = tipoDeVentilacion;
+        this.numeroPiso = numeroPiso;
+    }
 
     public Sala(Long idSala, String nombre, Double m2, int cantidadEstudiantes, int cantidadVentanas, 
             Institucion institucion, String aireAcondicionado, String tipoDeVentilacion, int numeroPiso) {
@@ -67,6 +77,14 @@ public class Sala {
 
     public void setIdSala(Long idSala) {
         this.idSala = idSala;
+    }
+
+    public Long getId() {
+        return idSala;
+    }
+
+    public void setId(Long id) {
+        this.idSala = id;
     }
 
     public Double getM2() {

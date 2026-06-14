@@ -77,6 +77,14 @@ public class Medicion {
         this.idMedicion = idMedicion;
     }
 
+    public Long getId() {
+        return idMedicion;
+    }
+
+    public void setId(Long id) {
+        this.idMedicion = id;
+    }
+
     public Double getTemperatura() {
         return temperatura;
     }

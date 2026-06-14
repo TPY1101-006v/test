@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -42,9 +43,9 @@ public class ReportController {
             for (Medicion m : mediciones) {
                 if (m.getNodo() == null) continue; // Evita nodos nulos
                 String fechaStr = m.getFechaHora() != null ? m.getFechaHora().format(formatter) : "";
-                writer.printf("%d,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%s\n",
+                writer.printf(Locale.US, "%d,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%s\n",
                         m.getNodo().getIdNodo(),
-                        m.getNodo().getDescripcion(),
+                        m.getNodo().getDescripcion() != null ? m.getNodo().getDescripcion() : m.getNodo().getNombre(),
                         m.getTemperatura(),
                         m.getHumedad(),
                         m.getDb(),

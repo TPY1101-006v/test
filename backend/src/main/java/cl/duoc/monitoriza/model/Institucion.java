@@ -37,6 +37,14 @@ public class Institucion {
         this.idInstitucion = idInstitucion;
     }
 
+    public Long getId() {
+        return idInstitucion;
+    }
+
+    public void setId(Long id) {
+        this.idInstitucion = id;
+    }
+
     public String getNombre() {
         return nombre;
     }

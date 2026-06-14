@@ -40,12 +40,33 @@ public class Nodo {
         this.sala = sala;
     }
 
+    public Nodo(Long idNodo, String nombre) {
+        this.idNodo = idNodo;
+        this.nombre = nombre;
+    }
+
     public Long getIdNodo() {
         return idNodo;
     }
 
     public void setIdNodo(Long idNodo) {
         this.idNodo = idNodo;
+    }
+
+    public Long getId() {
+        return idNodo;
+    }
+
+    public void setId(Long id) {
+        this.idNodo = id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 
     public String getDescripcion() {
