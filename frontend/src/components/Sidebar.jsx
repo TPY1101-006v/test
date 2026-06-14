@@ -46,7 +46,7 @@ function generateReport(sensorData, alerts) {
   return `Monitoriza — INFORME AMBIENTAL\nGenerado: ${now}\n${'─'.repeat(40)}\n\nLECTURAS ACTUALES:\n${rows}\n\nALERTAS RECIENTES:\n${alertLines}\n\n${'─'.repeat(40)}\nMonitoriza v2.0.0`
 }
 
-export default function Sidebar({ open, onClose, alerts, activeAlerts, sensorData, history }) {
+export default function Sidebar({ open, onClose, alerts, activeAlerts, sensorData, history, soundEnabled, onToggleSound }) {
   const [conditions, setConditions] = useState(null)
   const [conditionsLoading, setConditionsLoading] = useState(true)
   const [conditionsError, setConditionsError] = useState(null)
@@ -138,6 +138,14 @@ export default function Sidebar({ open, onClose, alerts, activeAlerts, sensorDat
     }
   }
 
+  // Función manejadora para el botón de sonido
+  const handleSoundToggle = () => {
+    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+      Notification.requestPermission()
+    }
+    onToggleSound()
+  }
+
   return (
     <>
       <div className={`${styles.overlay} ${open ? styles.overlayOpen : ''}`} onClick={onClose} />
@@ -146,6 +154,21 @@ export default function Sidebar({ open, onClose, alerts, activeAlerts, sensorDat
           <div className={styles.header}>
             <span className={styles.title}>Menú</span>
             <button className={styles.closeBtn} onClick={onClose}>×</button>
+          </div>
+
+          {/* BOTÓN DE CONTROL DE ALERTAS SONORAS */}
+          <div style={{ padding: '0 1.5rem 1rem 1.5rem' }}>
+             <button 
+                onClick={handleSoundToggle}
+                style={{
+                  width: '100%', padding: '0.8rem', borderRadius: '8px', border: 'none',
+                  backgroundColor: soundEnabled ? 'var(--warn)' : '#e2e8f0',
+                  color: soundEnabled ? 'white' : '#475569', cursor: 'pointer',
+                  fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                }}
+             >
+                {soundEnabled ? '🔊 Desactivar Alertas' : '🔇 Activar Alertas'}
+             </button>
           </div>
 
           {PANELS.map(p => (
