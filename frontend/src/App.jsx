@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react' // <-- 1. Añadimos useRef
 import Header from './components/Header'
 import UpdateBar from './components/UpdateBar'
 import AlertsBanner from './components/AlertsBanner'
@@ -8,20 +8,24 @@ import Chatbot from './components/Chatbot'
 import Sidebar from './components/Sidebar'
 import { useSensors } from './hooks/useSensors'
 import { SENSORS } from './utils/constants'
-import { fetchAlerts, saveAlert } from './utils/api' // <-- Importamos saveAlert también
+import { fetchAlerts, saveAlert } from './utils/api'
 import styles from './App.module.css'
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [dbAlerts, setDbAlerts] = useState([]) 
   
-  // Traemos los datos y las alertas volátiles del hook
+  // <-- 2. Nuevo estado para controlar el sonido
+  const [soundEnabled, setSoundEnabled] = useState(false)
+  
+  // <-- 3. Referencia para evitar spam de sonido por una misma alerta
+  const hasNotifiedRef = useRef(false)
+
   const {
     values, history, alerts, activeAlerts,
     countdown, loading, isOutOfRange
   } = useSensors()
 
-  // 1. Carga inicial: Trae el historial guardado en la Base de Datos al abrir mi-aula
   useEffect(() => {
     fetchAlerts()
       .then(data => {
@@ -30,17 +34,12 @@ export default function App() {
       .catch(err => console.error('Error cargando alertas de la BD:', err))
   }, [])
 
-  // 2. SINCRONIZACIÓN AUTOMÁTICA: Si el hook genera una alerta nueva, la subimos a Spring Boot
   useEffect(() => {
     if (alerts && alerts.length > 0) {
-      // Tomamos la última alerta generada por el sistema web
       const ultimaAlerta = alerts[0]
-
-      // Evitamos duplicar si ya la guardamos (comparamos con la última que tiene la BD)
       const yaExiste = dbAlerts.some(a => a.time === ultimaAlerta.time && a.sensor === ultimaAlerta.sensor)
 
       if (!yaExiste) {
-        // Estructuramos el objeto idéntico a lo que espera nuestra Entidad Alerta.java
         const nuevaAlertaBD = {
           sensor: ultimaAlerta.sensor,
           value: Number(ultimaAlerta.value),
@@ -48,16 +47,37 @@ export default function App() {
           high: ultimaAlerta.high || false
         }
 
-        // Hacemos el POST al Backend
         saveAlert(nuevaAlertaBD)
           .then(alertaGuardada => {
-            // Insertamos la alerta guardada al principio de la lista del Chatbot y el Sidebar
             setDbAlerts(prev => [alertaGuardada, ...prev].slice(0, 15))
           })
           .catch(err => console.error('Error al persistir alerta en Spring Boot:', err))
       }
     }
-  }, [alerts]) // <-- Cada vez que cambien las alertas del sensor, se ejecuta este bloque
+  }, [alerts])
+
+  // <-- 4. NUEVO BLOQUE: Lógica de Notificaciones y Sonido
+  useEffect(() => {
+    if (activeAlerts && activeAlerts.length > 0) {
+      if (!hasNotifiedRef.current) {
+        // Solo suena y notifica si el usuario activó el sonido desde el Sidebar
+        if (soundEnabled) {
+          const audio = new Audio('/alerta.mp3')
+          audio.play().catch(err => console.warn('Autoplay bloqueado', err))
+
+          if (Notification.permission === 'granted') {
+            new Notification('¡Alerta Crítica Monitoriza!', {
+              body: `Atención: ${activeAlerts.length} parámetro(s) fuera de rango.`,
+              icon: '/vite.svg'
+            })
+          }
+        }
+        hasNotifiedRef.current = true
+      }
+    } else {
+      hasNotifiedRef.current = false // Reseteamos si todo vuelve a la normalidad
+    }
+  }, [activeAlerts, soundEnabled]) // <-- Escucha cambios en alertas y en el estado del sonido
 
   return (
     <div className={styles.app}>
@@ -83,16 +103,18 @@ export default function App() {
 
       <SensorChartSection history={history} values={values} />
       
-      {/* Sincronizados con la misma base de datos real */}
       <Chatbot sensorData={values} alerts={dbAlerts} />
       
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        alerts={dbAlerts}            // <-- Muestra el historial persistente
+        alerts={dbAlerts}
         activeAlerts={activeAlerts}  
         sensorData={values}
         history={history}
+        // <-- 5. Pasamos las propiedades del sonido al Sidebar
+        soundEnabled={soundEnabled}
+        onToggleSound={() => setSoundEnabled(!soundEnabled)}
       />
     </div>
   )
