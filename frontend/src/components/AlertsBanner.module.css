@@ -1,13 +1,22 @@
 .banner {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
+  flex-direction: column;
+  gap: 14px; /* Un poco más de aire */
+  padding: 16px; /* Más padding general */
   border-radius: var(--radius-sm);
   border: 0.5px solid var(--border);
   margin-bottom: 18px;
   font-family: var(--sans);
   font-size: 13px;
+  box-shadow: var(--shadow-md); /* Un poco de sombra para dar profundidad */
+}
+
+/* Envoltorio para la estructura superior (chips) */
+.topRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 
 .ok {
@@ -35,7 +44,7 @@
 }
 
 .icon {
-  font-size: 18px;
+  font-size: 20px; /* Icono principal más grande */
   flex-shrink: 0;
 }
 
@@ -44,28 +53,30 @@
 .title {
   font-family: var(--mono);
   font-size: 11px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
-  margin-bottom: 4px;
-  opacity: 0.85;
+  margin-bottom: 6px; /* Más espacio */
+  opacity: 0.9;
+  font-weight: bold;
 }
 
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px; /* Más espacio entre chips */
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
+  gap: 5px;
+  padding: 4px 12px;
   background: rgba(255, 255, 255, 0.05);
   border: 0.5px solid currentColor;
   border-radius: var(--radius-pill);
   font-size: 12px;
   font-family: var(--mono);
+  font-weight: 500;
 }
 
 .chipCritica {
@@ -74,11 +85,76 @@
 
 .arrow {
   font-size: 11px;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .text {
   font-family: var(--mono);
   font-size: 12px;
   letter-spacing: 0.5px;
+}
+
+/* ========================================= */
+/* MEJORA VISUAL: RECOMENDACIONES DESTACADAS */
+/* ========================================= */
+
+.recommendations {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  
+  /* NUEVO: Estilo de caja destacada (Callout) */
+  padding: 15px;
+  border-radius: var(--radius-sm);
+  background-color: #f7fafc; /* Fondo claro por defecto (contraste con el banner oscuro) */
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+/* ADAPTACIÓN DE COLORES DE LA CAJA SEGÚN SEVERIDAD */
+/* Si es Alerta (Naranja): Recuadro claro crema/naranja */
+.alerta .recommendations {
+  background-color: #fffaf0; 
+  border-color: rgba(246, 173, 85, 0.3);
+}
+
+/* Si es Crítica (Roja): Recuadro claro rosa/rojo */
+.critica .recommendations {
+  background-color: #fff5f5; 
+  border-color: rgba(252, 129, 129, 0.4);
+}
+
+.recItem {
+  display: flex;
+  gap: 10px;
+  font-size: 13px; /* Texto más grande */
+  line-height: 1.5; /* Más interlineado para lectura fácil */
+  align-items: flex-start;
+  color: #2d3748; /* Texto oscuro y legible por defecto en fondo claro */
+}
+
+/* Texto oscuro adaptable a la severidad dentro de la caja clara */
+.alerta .recItem { color: #e71111; }
+.critica .recItem { color: #9b2c2c; } /* Rojo oscuro */
+
+.recIcon {
+  font-size: 18px; /* Bombilla más grande */
+  flex-shrink: 0;
+  margin-top: 1px; /* Alineación óptica */
+}
+
+.recText {
+  font-weight: 500; /* Un poco más de grosor al texto general */
+}
+
+.recText strong {
+  font-family: var(--mono);
+  text-transform: uppercase;
+  font-size: 11px;
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.05); /* Pequeño highlight detrás del nombre del sensor */
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-right: 5px;
 }
