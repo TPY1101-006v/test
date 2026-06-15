@@ -90,11 +90,9 @@ export const API = {
   base: 'http://localhost:8080',
   medicionesUltimas: 'http://localhost:8080/api/mediciones/ultimas',
   report: 'http://localhost:8080/api/report',
+  informes: 'http://localhost:8080/api/informes',
+  chat: 'http://localhost:8080/api/chat',
   salas: 'http://localhost:8080/api/salas',
-/*
-  chat:       'http://ESP8266_IP/api/chat',        // POST { message, conditions } → { reply }
-  conditions: 'http://ESP8266_IP/api/conditions',  // POST { students, size, ... } → { ok }
-*/
 }
 // ====== FUNCIONES DE AYUDA (OBLIGATORIAS PARA EL PARCHE) ======
 

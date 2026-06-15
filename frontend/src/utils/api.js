@@ -28,10 +28,28 @@ function buildHistoryFromMediciones(mediciones) {
   return history
 }
 
-export async function downloadReportFromBackend() {
-  const response = await fetch(API.report)
+export async function fetchInformes() {
+  const response = await fetch(API.informes)
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`)
+  return response.json()
+}
+
+export async function downloadInformePdf(informeId) {
+  const response = await fetch(`${API.informes}/${informeId}/pdf`)
   if (!response.ok) throw new Error(`Error HTTP ${response.status}`)
   return response.blob()
+}
+
+export async function downloadMedicionesCsv() {
+  const response = await fetch(`${API.report}`)
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`)
+  return response.blob()
+}
+
+export async function fetchReportMetadata() {
+  const response = await fetch(`${API.report}/info`)
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`)
+  return response.json()
 }
 
 export async function fetchSensorData() {
@@ -48,38 +66,21 @@ export async function fetchSensorData() {
   }
 }
 
-// POST /api/chat — Formatea las alertas reales obtenidas de la Base de Datos
-export async function sendChatMessage(message, sensorData, alerts, conditions) {
-  await new Promise(r => setTimeout(r, 600 + Math.random() * 300))
-  const low = message.toLowerCase()
+// POST /api/chat — Asistente IA con contexto compacto (Gemini vía backend)
+export async function sendChatMessage(message) {
+  const response = await fetch(API.chat, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mensaje: message }),
+  })
 
-  // Respuesta para "resumen", "estado" o "dia"
-  if (low.includes('resumen') || low.includes('día') || low.includes('dia') || low.includes('estado')) {
-    const summary = SENSORS.map(s => {
-      const v = sensorData[s.key]
-      const f = v !== undefined ? (s.key === 'lux' || s.key === 'ppm' ? Math.round(v) : Number(v).toFixed(1)) : '—'
-      return `• ${s.label}: ${f} ${s.unit}`
-    }).join('\n')
-    
-    return `📊 **Estado actual de mi-aula:**\n\n${summary}\n\nHistorial: El sistema cuenta con **${alerts.length}** alertas guardadas en la base de datos.`
+  const data = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    throw new Error(data.error || `Error HTTP ${response.status}`)
   }
 
-  // Respuesta para "alerta", "historial" o "registro"
-  if (low.includes('alerta') || low.includes('historial') || low.includes('registro')) {
-    if (!alerts || alerts.length === 0) {
-      return '✅ **Registro Limpio:** No se registran alertas en la base de datos. Todos los parámetros ambientales están dentro del rango ideal.'
-    }
-    
-    // Tomamos las últimas 5 alertas de la base de datos y las ordenamos hacia abajo con saltos de línea
-    const listaAlertas = alerts.slice(0, 5).map((a, index) => {
-      const comportamiento = a.high ? 'Por encima' : 'Por debajo'
-      return `${index + 1}. 🚨 **${a.sensor}**: ${comportamiento} del rango (${a.value} ${a.unit}) — 🕒 ${a.time}`
-    }).join('\n')
-
-    return `🔔 **Historial de Alertas (Últimos registros en Base de Datos):**\n\n${listaAlertas}\n\n*Mostrando las 5 más recientes de un total de ${alerts.length}.*`
-  }
-
-  return `💬 Hola, soy Byte. Puedo ayudarte con el estado de la sala. Prueba haciendo clic en los botones de sugerencias o escribe:\n\n• **"resumen"**: Para ver cómo están los sensores ahora.\n• **"historial"**: Para listar los últimos incidentes de la BD.`
+  return data.respuesta
 }
 
 export function generateCSV(history) {

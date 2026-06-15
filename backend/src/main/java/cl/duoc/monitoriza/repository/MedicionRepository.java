@@ -1,5 +1,6 @@
 package cl.duoc.monitoriza.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,5 +12,14 @@ import cl.duoc.monitoriza.model.Medicion;
 public interface MedicionRepository extends JpaRepository<Medicion, Long>{
 
     List<Medicion> findTop20ByOrderByFechaHoraDesc();
+
+    List<Medicion> findByFechaHoraBetweenOrderByFechaHoraAsc(
+        LocalDateTime inicio, LocalDateTime fin);
+
+    List<Medicion> findAllByOrderByFechaHoraAsc();
+
+    Medicion findFirstByOrderByFechaHoraAsc();
+
+    Medicion findFirstByOrderByFechaHoraDesc();
 
 }

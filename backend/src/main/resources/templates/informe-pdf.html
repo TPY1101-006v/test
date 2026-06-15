@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Informe Monitoriza</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap');
+    @page { size: A4; margin: 0; }
+    html, body {
+      margin: 0; padding: 0;
+      background-color: #0f1117;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', 'DejaVu Sans', sans-serif;
+      color: #e2e8f0;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .page {
+      margin: 0; padding: 0;
+      background-color: #0f1117;
+    }
+    .report-sheet {
+      padding: 24px 28px 32px;
+      page-break-after: always;
+      background: linear-gradient(180deg, #0f1117 0%, #171b26 35%, #0f1117 100%);
+    }
+    .report-sheet-last {
+      page-break-after: auto;
+    }
+    .section-sheet {
+      page-break-before: always;
+    }
+    .avoid-break {
+      page-break-inside: avoid;
+    }
+    .header { border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 16px; margin-bottom: 16px; }
+    .header-table { width: 100%; border-collapse: collapse; }
+    .logo-box {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: rgba(99,179,237,0.12); border: 1px solid rgba(99,179,237,0.3);
+      text-align: center; font-size: 22px;
+    }
+    .brand {
+      font-family: 'Space Mono', 'DejaVu Sans Mono', monospace;
+      font-size: 24px; font-weight: 700; color: #e2e8f0; margin: 0;
+    }
+    .brand-sub {
+      font-family: 'Space Mono', monospace; font-size: 10px;
+      letter-spacing: 1.5px; text-transform: uppercase; color: #718096; margin-top: 4px;
+    }
+    .fecha-badge {
+      display: inline-block; padding: 8px 14px; border-radius: 20px;
+      background: rgba(99,179,237,0.12); border: 1px solid rgba(99,179,237,0.3);
+      color: #63b3ed; font-family: 'Space Mono', monospace; font-size: 10px;
+    }
+    .section-label {
+      font-family: 'Space Mono', monospace; font-size: 10px; color: #718096;
+      letter-spacing: 1.5px; text-transform: uppercase; margin: 0 0 8px 0;
+      page-break-after: avoid;
+    }
+    .card {
+      background: #1e2333; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 16px; margin-bottom: 14px;
+    }
+    .card-compact {
+      page-break-inside: avoid;
+    }
+    .card-title {
+      font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700;
+      color: #63b3ed; margin: 0 0 10px 0;
+    }
+    .rangos-grid { width: 100%; border-collapse: separate; border-spacing: 10px 10px; table-layout: fixed; }
+    .rangos-grid td {
+      width: 33.33%; padding: 10px 8px; vertical-align: middle; text-align: center;
+      background: #171b26; border: 1px solid rgba(255,255,255,0.08);
+    }
+    .rango-sensor { font-size: 9px; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; }
+    .rango-valor {
+      font-family: 'Space Mono', monospace; font-size: 11px; color: #68d391; margin-top: 2px;
+    }
+    .sala-box {
+      background: rgba(99,179,237,0.08); border: 1px solid rgba(99,179,237,0.2);
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 14px;
+      page-break-inside: avoid;
+    }
+    .sala-title {
+      font-family: 'Space Mono', monospace; font-size: 10px; color: #63b3ed;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+    }
+    .sala-grid { width: 100%; border-collapse: collapse; font-size: 11px; line-height: 1.6; }
+    .sala-grid td { padding: 3px 0; vertical-align: top; }
+    .sala-label {
+      width: 42%; color: #718096; font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.3px; padding-right: 10px;
+    }
+    .sala-value { color: #e2e8f0; font-weight: 500; }
+    .bloque-card {
+      background: #171b26; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 12px; margin-bottom: 10px;
+      page-break-inside: avoid;
+    }
+    .bloque-card.clase { border-color: rgba(104,211,145,0.25); }
+    .bloque-titulo {
+      font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: #e2e8f0;
+    }
+    .bloque-horario { font-size: 10px; color: #718096; margin-top: 2px; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 20px;
+      font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.5px;
+    }
+    .badge-clase { background: rgba(104,211,145,0.12); color: #68d391; }
+    .badge-no-clase { background: rgba(113,128,150,0.15); color: #718096; }
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 9px; }
+    .data-table th {
+      font-family: 'Space Mono', monospace; color: #718096; text-transform: uppercase;
+      letter-spacing: 0.5px; padding: 4px 3px; border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+    }
+    .data-table td {
+      padding: 4px 3px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-family: 'Space Mono', monospace;
+    }
+    .valor-ok { color: #68d391; }
+    .valor-alerta { color: #fc8181; font-weight: 700; }
+    .valor-neutro { color: #718096; }
+    .prom-grid { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .prom-grid td { width: 16.66%; text-align: center; padding: 6px 3px; vertical-align: top; }
+    .sensor-label { font-size: 8px; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; }
+    .sensor-value { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; margin-top: 3px; }
+    .sin-datos { color: #718096; font-size: 11px; font-style: italic; }
+    .contexto-sala {
+      background: rgba(104,211,145,0.08); border-left: 3px solid #68d391;
+      padding: 10px 12px; border-radius: 0 8px 8px 0; margin-bottom: 12px;
+      font-size: 11px; line-height: 1.55;
+    }
+    .analisis-item {
+      border-left: 3px solid #fc8181; background: rgba(252,129,129,0.08);
+      border-radius: 0 8px 8px 0; padding: 10px 12px; margin-bottom: 10px;
+      page-break-inside: avoid;
+    }
+    .analisis-sensor {
+      font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700;
+      color: #fc8181; margin: 0 0 6px 0;
+    }
+    .analisis-texto { font-size: 11px; line-height: 1.6; margin: 0; }
+    .solucion-item {
+      border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: 11px; line-height: 1.55;
+      page-break-inside: avoid;
+    }
+    .sol-corto { background: rgba(99,179,237,0.1); border: 1px solid rgba(99,179,237,0.25); }
+    .sol-largo { background: rgba(104,211,145,0.08); border: 1px solid rgba(104,211,145,0.22); }
+    .sol-titulo {
+      font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; margin-bottom: 4px;
+    }
+    .sol-corto .sol-titulo { color: #63b3ed; }
+    .sol-largo .sol-titulo { color: #68d391; }
+    .sol-indicadores { font-size: 10px; color: #718096; margin-bottom: 4px; }
+    .sol-texto { margin: 0; }
+    .footer {
+      margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);
+      font-family: 'Space Mono', monospace; font-size: 8px; color: #718096;
+      text-align: center; letter-spacing: 1px; text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HOJA 1: PORTADA (cabecera + sala + rangos) -->
+  <div class="report-sheet">
+
+  <!-- CABECERA -->
+  <div class="header avoid-break">
+    <table class="header-table">
+      <tr>
+        <td style="width:52px;vertical-align:middle;"><div class="logo-box">&#127979;</div></td>
+        <td style="vertical-align:middle;">
+          <div class="brand">Monitoriza</div>
+          <div class="brand-sub">Informe ambiental institucional</div>
+        </td>
+        <td style="width:220px;vertical-align:middle;text-align:right;">
+          <div class="fecha-badge" th:text="${fechaTitulo}">Viernes 12 de junio de 2026</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- CARACTERÍSTICAS DE LA SALA (justo después de cabecera) -->
+  <div class="sala-box" th:if="${resumen.sala != null}">
+    <div class="sala-title">Características de la sala</div>
+    <table class="sala-grid">
+      <tr>
+        <td class="sala-label">Sala</td>
+        <td class="sala-value" th:text="${resumen.sala.nombre}">Sala 101</td>
+      </tr>
+      <tr>
+        <td class="sala-label">Dimensiones de la sala</td>
+        <td class="sala-value" th:text="${resumen.sala.m2} + ' m²'">50 m²</td>
+      </tr>
+      <tr>
+        <td class="sala-label">Cantidad estudiantes</td>
+        <td class="sala-value" th:text="${resumen.sala.cantidadEstudiantes} + ' estudiantes'">30 estudiantes</td>
+      </tr>
+      <tr>
+        <td class="sala-label">Cantidad de ventanas</td>
+        <td class="sala-value" th:text="${resumen.sala.cantidadVentanas}">2</td>
+      </tr>
+      <tr>
+        <td class="sala-label">Tipo de ventilación</td>
+        <td class="sala-value" th:text="${#strings.capitalize(resumen.sala.tipoDeVentilacion)}">Cruzada</td>
+      </tr>
+      <tr>
+        <td class="sala-label">Tiene aire acondicionado</td>
+        <td class="sala-value" th:text="${#strings.toLowerCase(resumen.sala.aireAcondicionado)}">no</td>
+      </tr>
+      <tr>
+        <td class="sala-label">Piso de edificio</td>
+        <td class="sala-value" th:text="'Piso ' + ${resumen.sala.numeroPiso}">Piso 1</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- RANGOS IDEALES -->
+  <p class="section-label">Rangos de referencia ideales</p>
+  <div class="card avoid-break">
+    <table class="rangos-grid">
+      <tr th:each="fila : ${rangosFilas}">
+        <td th:each="rango : ${fila}">
+          <div class="rango-sensor" th:text="${rango.sensor}">Temperatura</div>
+          <div class="rango-valor">
+            <span th:text="${rango.rango}">23 – 26</span>
+            <span th:text="' ' + ${rango.unidad}">°C</span>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  </div>
+
+  <!-- HOJA 2+: SECCIÓN 1 -->
+  <div class="report-sheet section-sheet">
+  <p class="section-label">Sección 1 — Registro completo de mediciones</p>
+  <div class="card">
+    <h2 class="card-title">Todas las lecturas por bloque horario (7:30 – 16:30)</h2>
+
+    <div th:each="bloque : ${resumen.bloques}" class="bloque-card">
+      <div class="bloque-titulo" th:text="${bloque.tituloAmigable}">Primera clase</div>
+      <div class="bloque-horario"
+           th:text="${bloque.horario} + ' · ' + ${bloque.cantidadLecturas} + (${bloque.cantidadLecturas} == 1 ? ' lectura' : ' lecturas')">
+        08:00-09:29 · 18 lecturas
+      </div>
+
+      <div th:if="${#lists.isEmpty(bloque.lecturas)}" class="sin-datos" style="margin-top:8px;">
+        Sin lecturas en este bloque.
+      </div>
+
+      <table class="data-table" th:if="${!#lists.isEmpty(bloque.lecturas)}">
+        <thead>
+          <tr>
+            <th>Hora</th><th>Temp</th><th>Hum</th><th>dB</th><th>Lux</th><th>CO₂</th><th>TVOC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="lec : ${bloque.lecturas}">
+            <td th:text="${lec.hora}">08:05</td>
+            <td th:class="${lec.temperaturaAlterada} ? 'valor-alerta' : 'valor-ok'" th:text="${lec.temperatura}">24</td>
+            <td th:class="${lec.humedadAlterada} ? 'valor-alerta' : 'valor-ok'" th:text="${lec.humedad}">40</td>
+            <td th:class="${lec.dbAlterada} ? 'valor-alerta' : 'valor-ok'" th:text="${lec.db}">35</td>
+            <td th:class="${lec.luxAlterada} ? 'valor-alerta' : 'valor-ok'" th:text="${lec.lux}">400</td>
+            <td th:class="${lec.eco2Alterada} ? 'valor-alerta' : 'valor-ok'" th:text="${lec.eco2}">600</td>
+            <td th:class="${lec.tvocAlterada} ? 'valor-alerta' : 'valor-ok'" th:text="${lec.tvoc}">200</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- SECCIÓN 2 -->
+  <div class="report-sheet section-sheet">
+  <p class="section-label">Sección 2 — Promedios por bloque horario</p>
+  <div class="card">
+    <h2 class="card-title">Promedio de sensores por bloque</h2>
+
+    <div th:each="bloque : ${resumen.bloques}"
+         th:class="'bloque-card' + (${bloque.bloqueDeClase} ? ' clase' : '')">
+      <div class="bloque-titulo" th:text="${bloque.tituloAmigable}">Primera clase</div>
+      <div class="bloque-horario" th:text="${bloque.horario}">08:00-09:29</div>
+
+      <table class="prom-grid">
+        <tr>
+          <td>
+            <div class="sensor-label">Temp</div>
+            <div th:class="${bloque.temperaturaAlterada} ? 'sensor-value valor-alerta' : (${bloque.temperatura == '—'} ? 'sensor-value valor-neutro' : 'sensor-value valor-ok')"
+                 th:text="${bloque.temperatura} + ' °C'">24 °C</div>
+          </td>
+          <td>
+            <div class="sensor-label">Hum</div>
+            <div th:class="${bloque.humedadAlterada} ? 'sensor-value valor-alerta' : (${bloque.humedad == '—'} ? 'sensor-value valor-neutro' : 'sensor-value valor-ok')"
+                 th:text="${bloque.humedad} + ' %'">40 %</div>
+          </td>
+          <td>
+            <div class="sensor-label">dB</div>
+            <div th:class="${bloque.dbAlterada} ? 'sensor-value valor-alerta' : (${bloque.db == '—'} ? 'sensor-value valor-neutro' : 'sensor-value valor-ok')"
+                 th:text="${bloque.db} + ' dB'">35 dB</div>
+          </td>
+          <td>
+            <div class="sensor-label">Lux</div>
+            <div th:class="${bloque.luxAlterada} ? 'sensor-value valor-alerta' : (${bloque.lux == '—'} ? 'sensor-value valor-neutro' : 'sensor-value valor-ok')"
+                 th:text="${bloque.lux} + ' lx'">400 lx</div>
+          </td>
+          <td>
+            <div class="sensor-label">CO₂</div>
+            <div th:class="${bloque.eco2Alterada} ? 'sensor-value valor-alerta' : (${bloque.eco2 == '—'} ? 'sensor-value valor-neutro' : 'sensor-value valor-ok')"
+                 th:text="${bloque.eco2} + ' ppm'">600 ppm</div>
+          </td>
+          <td>
+            <div class="sensor-label">TVOC</div>
+            <div th:class="${bloque.tvocAlterada} ? 'sensor-value valor-alerta' : (${bloque.tvoc == '—'} ? 'sensor-value valor-neutro' : 'sensor-value valor-ok')"
+                 th:text="${bloque.tvoc} + ' ppb'">200 ppb</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- SECCIÓN 3 + 4 (misma hoja) -->
+  <div class="report-sheet section-sheet report-sheet-last">
+  <p class="section-label">Sección 3 — Análisis ambiental detallado</p>
+  <div class="card">
+    <h2 class="card-title">Alteraciones en jornada completa (conteo por lectura individual)</h2>
+
+    <div class="contexto-sala" th:if="${analisis.contextoSala != null and !#strings.isEmpty(analisis.contextoSala)}"
+         th:text="${analisis.contextoSala}">
+      Considerando la densidad de la sala...
+    </div>
+
+    <div th:if="${#lists.isEmpty(analisis.seccionAnalisis)}" class="sin-datos">
+      No se registraron alteraciones fuera de rango en ninguna lectura de la jornada.
+    </div>
+
+    <div th:each="item : ${analisis.seccionAnalisis}" class="analisis-item">
+      <p class="analisis-sensor"
+         th:text="${item.sensor} + ': ' + ${item.vecesAlterada} + (${item.vecesAlterada} == 1 ? ' lectura alterada' : ' lecturas alteradas')">
+        Temperatura: 12 lecturas alteradas
+      </p>
+      <p class="analisis-texto" th:text="${item.consecuencia}">Análisis detallado...</p>
+    </div>
+  </div>
+
+  <p class="section-label" style="margin-top:18px;">Sección 4 — Recomendaciones</p>
+  <div class="card">
+    <h2 class="card-title">Corto plazo</h2>
+    <div th:each="sol : ${analisis.solucionesCortoPlazo}" class="solucion-item sol-corto">
+      <div class="sol-titulo" th:text="${sol.titulo}">Abrir ventanas</div>
+      <div class="sol-indicadores" th:if="${!#lists.isEmpty(sol.indicadores)}"
+           th:text="'Indicadores: ' + ${#strings.listJoin(sol.indicadores, ', ')}">
+        Indicadores: CO2, Temperatura
+      </div>
+      <p class="sol-texto" th:text="${sol.explicacion}">Explicación...</p>
+    </div>
+    <div th:if="${#lists.isEmpty(analisis.solucionesCortoPlazo)}" class="sin-datos">
+      Mantener ventilación y monitoreo periódico.
+    </div>
+
+    <h2 class="card-title" style="margin-top:14px;">Largo plazo</h2>
+    <div th:each="sol : ${analisis.solucionesLargoPlazo}" class="solucion-item sol-largo">
+      <div class="sol-titulo" th:text="${sol.titulo}">Instalar A/C</div>
+      <div class="sol-indicadores" th:if="${!#lists.isEmpty(sol.indicadores)}"
+           th:text="'Indicadores: ' + ${#strings.listJoin(sol.indicadores, ', ')}">
+        Indicadores: Temperatura
+      </div>
+      <p class="sol-texto" th:text="${sol.explicacion}">Explicación...</p>
+    </div>
+    <div th:if="${#lists.isEmpty(analisis.solucionesLargoPlazo)}" class="sin-datos">
+      Evaluar mejoras estructurales según evolución del monitoreo.
+    </div>
+  </div>
+
+  <div class="footer avoid-break">Monitoriza · Confort ambiental para el aprendizaje</div>
+  </div>
+
+</div>
+</body>
+</html>

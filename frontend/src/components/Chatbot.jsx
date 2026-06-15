@@ -3,8 +3,18 @@ import { sendChatMessage } from '../utils/api'
 import styles from './Chatbot.module.css'
 
 const SUGGESTIONS = [
-  { label: '📋 Resumen del día', text: 'Dame el resumen del día' },
-  { label: '🚨 Ver alertas', text: '¿Cuáles han sido las alertas?' },
+  {
+    label: '📚 CO₂ en el aula',
+    text: '¿Qué consecuencias tiene el CO₂ por encima de 800 ppm en una sala escolar? Responde en 2 oraciones.',
+  },
+  {
+    label: '📊 Sensores hoy',
+    text: 'Según las mediciones de hoy, ¿qué sensores están alterados? Solo lista los nombres.',
+  },
+  {
+    label: '📈 Patrones del mes',
+    text: 'En los informes del mes, ¿qué sensor tuvo más alteraciones? Responde con el nombre y el total.',
+  },
 ]
 
 export default function Chatbot({ sensorData, alerts }) {
@@ -12,7 +22,7 @@ export default function Chatbot({ sensorData, alerts }) {
     {
       id: 0,
       type: 'bot',
-      text: '👋 Hola, soy tu asistente de mi-aula. Puedo darte el resumen del día, informarte sobre las alertas reales en la BD o responder tus preguntas sobre el ambiente.',
+      text: '👋 Hola, soy tu asistente ambiental de mi-aula. Puedo explicarte los sensores, consultar las mediciones de hoy o analizar patrones de los informes del mes.',
     },
   ])
   const [input, setInput] = useState('')
@@ -31,13 +41,12 @@ export default function Chatbot({ sensorData, alerts }) {
     setTyping(true)
 
     try {
-      // Le pasamos las alertas que vienen desde la base de datos (App.jsx)
-      const reply = await sendChatMessage(text, sensorData, alerts)
+      const reply = await sendChatMessage(text)
       setMessages(prev => [...prev, { id: Date.now() + 1, type: 'bot', text: reply }])
-    } catch {
+    } catch (err) {
       setMessages(prev => [...prev, {
         id: Date.now() + 1, type: 'bot',
-        text: '⚠️ No pude conectarme al asistente. Intenta nuevamente.',
+        text: `⚠️ ${err.message || 'No pude conectarme al asistente. Intenta nuevamente.'}`,
       }])
     } finally {
       setTyping(false)

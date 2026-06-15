@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { fetchSalaConditions, updateSalaConditions, downloadReportFromBackend } from '../utils/api'
-import { SENSORS, VENTILATION_TYPES, VENTILATION_HELP } from '../utils/constants'
+import {
+  fetchSalaConditions,
+  updateSalaConditions,
+  fetchInformes,
+  downloadInformePdf,
+  downloadMedicionesCsv,
+  fetchReportMetadata,
+} from '../utils/api'
+import { VENTILATION_TYPES, VENTILATION_HELP } from '../utils/constants'
 import styles from './Sidebar.module.css'
 
 const PANELS = [
-  { key: 'descarga',  emoji: '📥', cls: 'blue',  label: 'Descargar datos',    sub: 'Informe y CSV' },
+  { key: 'descarga',  emoji: '📥', cls: 'blue',  label: 'Descargar datos',    sub: 'Informe PDF y CSV' },
   { key: 'sala',      emoji: '🏫', cls: 'green', label: 'Condiciones de sala', sub: 'Configurar aula' },
   { key: 'historial', emoji: '🔔', cls: 'red',   label: 'Historial de alertas', sub: 'Eventos fuera de rango' },
   { key: 'nosotros',  emoji: '👥', cls: 'gray',  label: 'Sobre nosotros',       sub: 'El equipo Monitoriza' },
@@ -30,20 +37,17 @@ const CATS = [
  (_______)`
 ]
 
-function generateReport(sensorData, alerts) {
-  const now = new Date().toLocaleString('es-CL')
-  const rows = SENSORS.map(s => {
-    const v = sensorData[s.key]
-    const f = v !== undefined ? (s.key === 'lux' || s.key === 'ppm' ? Math.round(v) : Number(v).toFixed(1)) : '—'
-    const out = v !== undefined && (v < s.min || v > s.max)
-    return `  ${s.label}: ${f} ${s.unit}  ${out ? '⚠ FUERA DE RANGO' : '✓ OK'}`
-  }).join('\n')
-  
-  const alertLines = alerts.length
-    ? alerts.slice(0, 5).map(a => `  [${a.time}] ${a.sensor || a.label}: ${a.value}${a.unit}`).join('\n')
-    : '  Sin alertas registradas'
-    
-  return `Monitoriza — INFORME AMBIENTAL\nGenerado: ${now}\n${'─'.repeat(40)}\n\nLECTURAS ACTUALES:\n${rows}\n\nALERTAS RECIENTES:\n${alertLines}\n\n${'─'.repeat(40)}\nMonitoriza v2.0.0`
+function formatInformeFecha(fechaStr) {
+  if (!fechaStr) return 'Sin fecha'
+  const [y, m, d] = fechaStr.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
+  const raw = date.toLocaleDateString('es-CL', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+  return raw.charAt(0).toUpperCase() + raw.slice(1)
 }
 
 export default function Sidebar({ open, onClose, alerts, activeAlerts, sensorData, history }) {
@@ -53,6 +57,13 @@ export default function Sidebar({ open, onClose, alerts, activeAlerts, sensorDat
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [dlState, setDlState] = useState({ pdf: 'idle', csv: 'idle' })
+  const [informes, setInformes] = useState([])
+  const [selectedInformeId, setSelectedInformeId] = useState('')
+  const [informesLoading, setInformesLoading] = useState(false)
+  const [informesError, setInformesError] = useState(null)
+  const [reportMeta, setReportMeta] = useState(null)
+  const [reportMetaLoading, setReportMetaLoading] = useState(false)
+  const [reportMetaError, setReportMetaError] = useState(null)
   const [catOpen, setCatOpen] = useState(false)
   const [catArt, setCatArt] = useState('')
   const [activePanel, setActivePanel] = useState('descarga')
@@ -73,6 +84,38 @@ export default function Sidebar({ open, onClose, alerts, activeAlerts, sensorDat
       .finally(() => setConditionsLoading(false))
   }, [])
 
+  useEffect(() => {
+    if (!open || activePanel !== 'descarga') return
+
+    setInformesLoading(true)
+    setInformesError(null)
+    setReportMetaLoading(true)
+    setReportMetaError(null)
+
+    fetchInformes()
+      .then(data => {
+        const conPdf = (data || []).filter(i => i.tienePdf)
+        setInformes(conPdf)
+        setSelectedInformeId(conPdf.length ? String(conPdf[0].id) : '')
+      })
+      .catch(err => {
+        console.error('Error cargando informes:', err)
+        setInformesError('No se pudieron cargar los informes')
+        setInformes([])
+        setSelectedInformeId('')
+      })
+      .finally(() => setInformesLoading(false))
+
+    fetchReportMetadata()
+      .then(data => setReportMeta(data))
+      .catch(err => {
+        console.error('Error cargando metadata CSV:', err)
+        setReportMetaError('No se pudo obtener el resumen del CSV')
+        setReportMeta(null)
+      })
+      .finally(() => setReportMetaLoading(false))
+  }, [open, activePanel])
+
   // Al cerrar el menú lateral por completo, reiniciamos los clics del gato
   useEffect(() => {
     if (!open) setCatClicks(0)
@@ -90,24 +133,41 @@ export default function Sidebar({ open, onClose, alerts, activeAlerts, sensorDat
     })
   }
 
-  function downloadPDF() {
+  async function downloadPDF() {
+    if (!selectedInformeId) {
+      alert('Selecciona un informe para descargar')
+      return
+    }
+
     setDlState(s => ({ ...s, pdf: 'loading' }))
-    const blob = new Blob([generateReport(sensorData, alerts)], { type: 'text/plain;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = `Monitoriza-informe-${new Date().toISOString().slice(0,10)}.txt`; a.click()
-    URL.revokeObjectURL(url)
-    setDlState(s => ({ ...s, pdf: 'done' }))
+    try {
+      const blob = await downloadInformePdf(selectedInformeId)
+      const informe = informes.find(i => String(i.id) === selectedInformeId)
+      const fecha = informe?.fecha || new Date().toISOString().slice(0, 10)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `Monitoriza-informe-${fecha}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+      setDlState(s => ({ ...s, pdf: 'done' }))
+    } catch (err) {
+      console.error('Error descargando informe PDF:', err)
+      alert('No se pudo descargar el informe PDF.')
+      setDlState(s => ({ ...s, pdf: 'idle' }))
+      return
+    }
     setTimeout(() => setDlState(s => ({ ...s, pdf: 'idle' })), 2500)
   }
 
   async function downloadCSV() {
     setDlState(s => ({ ...s, csv: 'loading' }))
     try {
-      const blob = await downloadReportFromBackend()
+      const blob = await downloadMedicionesCsv()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `Monitoriza-${new Date().toISOString().slice(0, 10)}.csv`
+      a.download = `monitoriza-mediciones-${new Date().toISOString().slice(0, 10)}.csv`
       a.click()
       URL.revokeObjectURL(url)
       setDlState(s => ({ ...s, csv: 'done' }))
@@ -157,13 +217,97 @@ export default function Sidebar({ open, onClose, alerts, activeAlerts, sensorDat
 
           {activePanel === 'descarga' && (
             <div className={styles.panel}>
-              <div className={styles.panelTitle}>exportar datos</div>
-              <button className={`${styles.dlBtn} ${styles.dlPdf}`} onClick={downloadPDF} disabled={dlState.pdf === 'loading'}>
-                📄 {dlState.pdf === 'loading' ? 'Generando...' : dlState.pdf === 'done' ? '✓ Descargado' : 'Descargar informe'}
-              </button>
-              <button className={`${styles.dlBtn} ${styles.dlCsv}`} onClick={downloadCSV} disabled={dlState.csv === 'loading'}>
-                📊 {dlState.csv === 'loading' ? 'Exportando...' : dlState.csv === 'done' ? '✓ Descargado' : 'Descargar CSV'}
-              </button>
+              <div className={styles.panelTitle}>Exportar datos</div>
+
+              <div className={styles.exportCard}>
+                <div className={styles.exportCardHeader}>
+                  <span className={styles.exportIcon}>📄</span>
+                  <div>
+                    <div className={styles.exportCardTitle}>Informe diario (PDF)</div>
+                    <div className={styles.exportCardSub}>
+                      Análisis con IA, gráficos y recomendaciones de un día escolar.
+                    </div>
+                  </div>
+                </div>
+
+                {informesLoading && <div className={styles.exportHint}>Cargando informes...</div>}
+                {informesError && <div className={styles.exportError}>{informesError}</div>}
+
+                {!informesLoading && !informesError && informes.length === 0 && (
+                  <div className={styles.exportHint}>No hay informes PDF disponibles aún.</div>
+                )}
+
+                {!informesLoading && !informesError && informes.length > 0 && (
+                  <div className={styles.exportField}>
+                    <label className={styles.formLabel} htmlFor="informe-select">
+                      Selecciona el día del informe
+                    </label>
+                    <select
+                      id="informe-select"
+                      className={styles.formInput}
+                      value={selectedInformeId}
+                      onChange={e => setSelectedInformeId(e.target.value)}
+                    >
+                      {informes.map(informe => (
+                        <option key={informe.id} value={informe.id}>
+                          {formatInformeFecha(informe.fecha)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <button
+                  className={`${styles.dlBtn} ${styles.dlPdf}`}
+                  onClick={downloadPDF}
+                  disabled={dlState.pdf === 'loading' || informesLoading || !selectedInformeId}
+                >
+                  {dlState.pdf === 'loading' ? 'Descargando PDF...' : dlState.pdf === 'done' ? '✓ PDF descargado' : 'Descargar informe PDF'}
+                </button>
+              </div>
+
+              <div className={styles.exportCard}>
+                <div className={styles.exportCardHeader}>
+                  <span className={styles.exportIcon}>📊</span>
+                  <div>
+                    <div className={styles.exportCardTitle}>Registro de mediciones (CSV)</div>
+                    <div className={styles.exportCardSub}>
+                      Todas las lecturas guardadas en la base de datos.
+                    </div>
+                  </div>
+                </div>
+
+                {reportMetaError && <div className={styles.exportError}>{reportMetaError}</div>}
+
+                <button
+                  className={`${styles.dlBtn} ${styles.dlCsv}`}
+                  onClick={downloadCSV}
+                  disabled={dlState.csv === 'loading' || reportMetaLoading || (reportMeta?.totalMediciones === 0)}
+                >
+                  {dlState.csv === 'loading' ? 'Generando CSV...' : dlState.csv === 'done' ? '✓ CSV descargado' : 'Descargar CSV completo'}
+                </button>
+
+                <div className={styles.exportMetaFooter}>
+                  {reportMetaLoading && (
+                    <span className={styles.exportMetaLine}>Calculando alcance del export...</span>
+                  )}
+                  {!reportMetaLoading && reportMeta && reportMeta.totalMediciones > 0 && (
+                    <>
+                      <span className={styles.exportMetaLine}>
+                        Total de lecturas: {reportMeta.totalMediciones.toLocaleString('es-CL')}
+                      </span>
+                      {reportMeta.fechaDesde && reportMeta.fechaHasta && (
+                        <span className={styles.exportMetaLine}>
+                          Periodo: {reportMeta.fechaDesde} → {reportMeta.fechaHasta}
+                        </span>
+                      )}
+                    </>
+                  )}
+                  {!reportMetaLoading && reportMeta && reportMeta.totalMediciones === 0 && (
+                    <span className={styles.exportMetaLine}>Sin lecturas disponibles para exportar.</span>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
