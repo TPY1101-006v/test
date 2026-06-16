@@ -119,6 +119,8 @@ class GeminiServiceTest {
                 512
         );
 
+        assertTrue(!sinKey.tieneApiKeyConfigurada());
+
         ResumenDiaDto resumen = new ResumenDiaDto();
 
         IllegalStateException ex = assertThrows(
@@ -126,6 +128,19 @@ class GeminiServiceTest {
                 () -> sinKey.generarAnalisis(resumen)
         );
         assertTrue(ex.getMessage().contains("GEMINI_API_KEY"));
+        assertTrue(GeminiService.esErrorDeAutenticacion(ex));
+    }
+
+    @Test
+    void tieneApiKeyConfiguradaConClaveValida() {
+        assertTrue(geminiService.tieneApiKeyConfigurada());
+    }
+
+    @Test
+    void esErrorDeAutenticacionDetectaRespuesta403() {
+        IllegalStateException ex = new IllegalStateException(
+                "Error llamando a Gemini (403): API key not valid. Please pass a valid API key.");
+        assertTrue(GeminiService.esErrorDeAutenticacion(ex));
     }
 
     @Test

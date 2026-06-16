@@ -64,6 +64,7 @@ class InformeServiceTest {
         informeService = new InformeService(
                 informeRepository, resumenDiaService, medicionService,
                 geminiService, informePdfService, objectMapper);
+        when(geminiService.tieneApiKeyConfigurada()).thenReturn(true);
     }
 
     @Test
@@ -199,6 +200,36 @@ class InformeServiceTest {
         assertThrows(IllegalStateException.class, () -> informeService.generarInforme(FECHA_HABIL));
         verify(resumenDiaService, never()).construirResumen(any());
         verify(geminiService, never()).generarAnalisis(any());
+    }
+
+    @Test
+    void generarInformesPendientesSinApiKeyNoIntentaGenerar() {
+        when(geminiService.tieneApiKeyConfigurada()).thenReturn(false);
+
+        int generados = informeService.generarInformesPendientes(FECHA_HABIL, FECHA_HABIL);
+
+        assertEquals(0, generados);
+        verify(geminiService, never()).generarAnalisis(any());
+        verify(medicionService, never()).medicionesDelDia(any());
+    }
+
+    @Test
+    void generarInformesPendientesDetieneSiFallaApiKey() {
+        LocalDate dia1 = LocalDate.of(2026, 6, 10);
+        LocalDate dia2 = LocalDate.of(2026, 6, 11);
+
+        when(informeRepository.existsByFecha(any())).thenReturn(false);
+        when(medicionService.medicionesDelDia(dia1)).thenReturn(List.of(new Medicion()));
+        when(medicionService.medicionesDelDia(dia2)).thenReturn(List.of(new Medicion()));
+        when(resumenDiaService.construirResumen(any())).thenReturn(new ResumenDiaDto());
+        when(geminiService.generarAnalisis(any())).thenThrow(new IllegalStateException(
+                "Error llamando a Gemini (403): API key not valid. Please pass a valid API key."));
+
+        int generados = informeService.generarInformesPendientes(dia1, dia2);
+
+        assertEquals(0, generados);
+        verify(geminiService, times(1)).generarAnalisis(any());
+        verify(informeRepository, never()).save(any());
     }
 
     private Informe informeGuardado(Long id, LocalDate fecha) {

@@ -365,8 +365,34 @@ public class GeminiService {
         return trimmed.trim();
     }
 
+    public boolean tieneApiKeyConfigurada() {
+        return apiKey != null && !apiKey.isBlank();
+    }
+
+    public static boolean esErrorDeAutenticacion(Throwable error) {
+        Throwable actual = error;
+        while (actual != null) {
+            String mensaje = actual.getMessage();
+            if (mensaje != null) {
+                String normalizado = mensaje.toLowerCase();
+                if (normalizado.contains("gemini_api_key")
+                        || normalizado.contains("api key")
+                        || normalizado.contains("api_key")
+                        || normalizado.contains("(401)")
+                        || normalizado.contains("(403)")
+                        || normalizado.contains("permission_denied")
+                        || normalizado.contains("invalid api key")
+                        || normalizado.contains("api key not valid")) {
+                    return true;
+                }
+            }
+            actual = actual.getCause();
+        }
+        return false;
+    }
+
     private void validarApiKey() {
-        if (apiKey == null || apiKey.isBlank()) {
+        if (!tieneApiKeyConfigurada()) {
             throw new IllegalStateException(
                     "GEMINI_API_KEY no configurada. Define la variable de entorno antes de iniciar la app.");
         }
