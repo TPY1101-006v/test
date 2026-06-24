@@ -21,17 +21,34 @@ export default function SensorChartSection({ history }) {
   const sensor = SENSORS.find(s => s.key === selectedSensor)
   const entries = history[selectedSensor] || []
   
-  const lineData = entries.map(e => ({
-    time: e.t,
-    valor: (e[selectedSensor] !== undefined && e[selectedSensor] !== null)
-      ? parseFloat(Number(e[selectedSensor]).toFixed(2))
-      : null,
-  }))
+  const lineData = entries.map(e => {
+    // 1. Buscamos el valor (soportamos distintas formas en las que puede llegar el JSON)
+    let rawVal = e[selectedSensor] !== undefined ? e[selectedSensor] : (e.v !== undefined ? e.v : e.value);
+    let parsedVal = (rawVal !== undefined && rawVal !== null) ? Number(rawVal) : null;
 
-  // Calculamos el máximo para asegurar que la línea ideal siempre se vea
+    // 2. ESCUDO ANTI-ANOMALÍAS (Outlier Filter)
+    // Si el valor supera el máximo del sensor x 3 (o un límite general), es un error de hardware.
+    // También filtramos lecturas negativas en sensores donde no tiene sentido físico.
+    const limiteLogico = sensor?.max ? sensor.max * 3 : 10000;
+    
+    if (parsedVal !== null && (parsedVal > limiteLogico || parsedVal < 0)) {
+      parsedVal = null; // Ignoramos el dato basura para no deformar la gráfica
+    } else if (parsedVal !== null) {
+      parsedVal = parseFloat(parsedVal.toFixed(2));
+    }
+
+    return {
+      time: e.t,
+      valor: parsedVal
+    }
+  })
+
+  // 3. Calculamos el máximo real solo tomando en cuenta los datos limpios
   const dataValues = lineData.map(d => d.valor).filter(v => v !== null);
   const maxVal = dataValues.length > 0 ? Math.max(...dataValues) : sensor.ideal;
-  const domainMax = Math.max(maxVal * 1.1, sensor.ideal * 1.2);
+  
+  // 4. Redondeamos el límite superior para que el eje Y se vea más limpio
+  const domainMax = Math.ceil(Math.max(maxVal * 1.1, sensor.ideal * 1.2));
 
   return (
     <div className={styles.section}>
@@ -72,17 +89,22 @@ export default function SensorChartSection({ history }) {
             <LineChart data={lineData} margin={{ top: 10, right: 10, bottom: 0, left: -15 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="time" tick={{ fill: '#718096', fontSize: 11 }} tickLine={false} axisLine={false} />
+              
+              {/* Aplicamos el nuevo dominio limpio */}
               <YAxis 
                 domain={[0, domainMax]} 
                 tick={{ fill: '#718096', fontSize: 11 }} 
                 tickLine={false} 
                 axisLine={false} 
               />
+              
               <Tooltip
                 contentStyle={{ background: '#1e2333', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
                 formatter={(val) => [`${val} ${sensor.unit}`, sensor.label]}
               />
               <ReferenceLine y={sensor.ideal} stroke="#f6ad55" strokeDasharray="6 4" strokeWidth={1.5} />
+              
+              {/* connectNulls={true} hará que la línea ignore los cortes de los datos que acabamos de filtrar */}
               <Line type="monotone" dataKey="valor" stroke={sensor.color} strokeWidth={2} dot={{ r: 2 }} connectNulls />
             </LineChart>
           </ResponsiveContainer>
