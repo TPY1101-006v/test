@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react' // <-- 1. Añadimos useRef
+import React, { useState, useEffect, useRef } from 'react' 
 import Header from './components/Header'
 import UpdateBar from './components/UpdateBar'
 import AlertsBanner from './components/AlertsBanner'
@@ -6,6 +6,7 @@ import SensorCard from './components/SensorCard'
 import SensorChartSection from './components/SensorChartSection'
 import Chatbot from './components/Chatbot'
 import Sidebar from './components/Sidebar'
+import ThemeToggle from './components/ThemeToggle' // ✨ AÑADIDO: Importación del botón
 import { useSensors } from './hooks/useSensors'
 import { SENSORS } from './utils/constants'
 import { fetchAlerts, saveAlert } from './utils/api'
@@ -81,6 +82,8 @@ export default function App() {
 
   return (
     <div className={styles.app}>
+      <ThemeToggle /> {/* ✨ AÑADIDO: Renderizamos el botón del sol/luna */}
+      
       <Header onMenuOpen={() => setSidebarOpen(true)} />
       <UpdateBar countdown={countdown} />
       

@@ -15,6 +15,7 @@
 .ok { border-color: rgba(104,211,145,0.25); }
 .warning { border-color: var(--warn); } /* Naranja */
 .critical { border-color: #ef4444; } /* Rojo */
+.calibration { border-color: #a855f7; } /* ✨ NUEVO: Morado para calibración */
 
 .icon { font-size: 22px; margin-bottom: 10px; }
 
@@ -64,6 +65,12 @@
 .statusCritical {
   background: rgba(239,68,68,0.12); 
   color: #ef4444; 
+}
+
+/* ✨ NUEVO: Píldora para calibración */
+.statusCalibration {
+  background: rgba(168, 85, 247, 0.12); /* Morado con transparencia */
+  color: #a855f7; /* Morado sólido */
 }
 
 .range {

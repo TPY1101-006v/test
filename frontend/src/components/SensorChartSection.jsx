@@ -87,22 +87,23 @@ export default function SensorChartSection({ history }) {
         <div className={styles.chartWrap}>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={lineData} margin={{ top: 10, right: 10, bottom: 0, left: -15 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="time" tick={{ fill: '#718096', fontSize: 11 }} tickLine={false} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="time" tick={{ fill: 'var(--muted)', fontSize: 11 }} tickLine={false} axisLine={false} />
               
               {/* Aplicamos el nuevo dominio limpio */}
               <YAxis 
                 domain={[0, domainMax]} 
-                tick={{ fill: '#718096', fontSize: 11 }} 
+                tick={{ fill: 'var(--muted)', fontSize: 11 }} 
                 tickLine={false} 
                 axisLine={false} 
               />
               
               <Tooltip
-                contentStyle={{ background: '#1e2333', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
+                contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8 }}
+                itemStyle={{ color: 'var(--text)' }}
                 formatter={(val) => [`${val} ${sensor.unit}`, sensor.label]}
               />
-              <ReferenceLine y={sensor.ideal} stroke="#f6ad55" strokeDasharray="6 4" strokeWidth={1.5} />
+              <ReferenceLine y={sensor.ideal} stroke="var(--accent3)" strokeDasharray="6 4" strokeWidth={1.5} />
               
               {/* connectNulls={true} hará que la línea ignore los cortes de los datos que acabamos de filtrar */}
               <Line type="monotone" dataKey="valor" stroke={sensor.color} strokeWidth={2} dot={{ r: 2 }} connectNulls />

@@ -1,0 +1,24 @@
+.toggleBtn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--card, #1e1e1e);
+  border: 1px solid var(--border, #333);
+  color: var(--text, #ffffff);
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1000; /* Asegura que esté por encima de todo */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.toggleBtn:hover {
+  transform: scale(1.1);
+  background: var(--border, #444);
+}
