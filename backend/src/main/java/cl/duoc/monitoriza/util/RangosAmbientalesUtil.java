@@ -7,23 +7,23 @@ import cl.duoc.monitoriza.model.Medicion;
  */
 public final class RangosAmbientalesUtil {
 
-    public static final double TEMP_MIN = 23.0;
-    public static final double TEMP_MAX = 26.0;
-    public static final double HUMEDAD_MIN = 35.0;
-    public static final double HUMEDAD_MAX = 50.0;
-    public static final double DB_MIN = 30.0;
-    public static final double DB_MAX = 50.0;
+    public static final double TEMP_MIN = 20.0;
+    public static final double TEMP_MAX = 22.0;
+    public static final double HUMEDAD_MIN = 40.0;
+    public static final double HUMEDAD_MAX = 60.0;
+    public static final double DB_MIN = 35.0;
+    public static final double DB_MAX = 45.0;
     public static final double LUX_MIN = 300.0;
     public static final double LUX_MAX = 500.0;
     public static final double ECO2_MIN = 400.0;
     public static final double ECO2_MAX = 800.0;
     public static final double TVOC_MIN = 0.0;
-    public static final double TVOC_MAX = 500.0;
+    public static final double TVOC_MAX = 220.0;
 
     public enum Sensor {
         TEMPERATURA("Temperatura", "°C", TEMP_MIN, TEMP_MAX),
         HUMEDAD("Humedad", "%", HUMEDAD_MIN, HUMEDAD_MAX),
-        DB("Decibeles", "dB", DB_MIN, DB_MAX),
+        DB("Decibeles", "dBA", DB_MIN, DB_MAX),
         LUX("Iluminación", "lx", LUX_MIN, LUX_MAX),
         ECO2("Dióxido de Carbono", "ppm", ECO2_MIN, ECO2_MAX),
         TVOC("Compuestos Orgánicos Volátiles", "ppb", TVOC_MIN, TVOC_MAX);
@@ -56,24 +56,34 @@ public final class RangosAmbientalesUtil {
         return estaFueraDeRango(v, HUMEDAD_MIN, HUMEDAD_MAX);
     }
 
+    /** Por debajo de 35 dBA no hay consecuencias negativas; solo alerta si supera el máximo. */
     public static boolean dbAlterado(Double v) {
-        return estaFueraDeRango(v, DB_MIN, DB_MAX);
+        return v != null && v > DB_MAX;
     }
 
     public static boolean luxAlterada(Double v) {
         return estaFueraDeRango(v, LUX_MIN, LUX_MAX);
     }
 
+    /** Por debajo de 400 ppm el aire es más limpio; solo alerta si supera el máximo. */
     public static boolean eco2Alterado(Double v) {
-        return estaFueraDeRango(v, ECO2_MIN, ECO2_MAX);
+        return v != null && v > ECO2_MAX;
     }
 
+    /** Por debajo del límite no hay impacto negativo; solo alerta si supera el máximo. */
     public static boolean tvocAlterado(Double v) {
-        return estaFueraDeRango(v, TVOC_MIN, TVOC_MAX);
+        return v != null && v > TVOC_MAX;
     }
 
     public static boolean estaAlterado(Sensor sensor, Double valor) {
-        return estaFueraDeRango(valor, sensor.getMin(), sensor.getMax());
+        return switch (sensor) {
+            case TEMPERATURA -> temperaturaAlterada(valor);
+            case HUMEDAD     -> humedadAlterada(valor);
+            case DB          -> dbAlterado(valor);
+            case LUX         -> luxAlterada(valor);
+            case ECO2        -> eco2Alterado(valor);
+            case TVOC        -> tvocAlterado(valor);
+        };
     }
 
     public static boolean estaFueraDeRango(Double valor, double min, double max) {

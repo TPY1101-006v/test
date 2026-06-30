@@ -57,4 +57,17 @@ class ChatControllerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
+
+    @Test
+    void postChatLimiteExcedido() {
+        when(chatService.responder(any())).thenThrow(
+                new IllegalStateException("Demasiados mensajes seguidos. Espera un minuto e intenta de nuevo."));
+
+        ChatRequestDto request = new ChatRequestDto();
+        request.setMensaje("¿Qué es CO2?");
+
+        ResponseEntity<?> response = chatController.chat(request);
+
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS, response.getStatusCode());
+    }
 }

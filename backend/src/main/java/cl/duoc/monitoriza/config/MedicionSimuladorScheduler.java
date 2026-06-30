@@ -61,8 +61,6 @@ public class MedicionSimuladorScheduler {
         double db          = redondear1(enClase ? 35.0 + Math.random() * 12 : 30.0 + Math.random() * 4);
         double lux         = Math.round(enClase ? 350 + Math.random() * 120 : 20 + Math.random() * 30);
         double eco2        = Math.round(enClase ? 550 + Math.random() * 250 : 420 + Math.random() * 80);
-        
-        // ✨ CAMBIO: Ahora TVOC genera valores entre 150-380 en clases y 100-150 fuera de horario
         double tvoc        = Math.round(enClase ? 150 + Math.random() * 230 : 100 + Math.random() * 50);
 
         Medicion m = new Medicion(temperatura, humedad, db, lux, eco2, tvoc, nodo);

@@ -23,7 +23,7 @@ export function getContextualRecommendation(alert, conditions) {
       if (alert.high) {
         let msg = "Exceso de calor. ";
         if (hasAC) {
-          msg += "Activar A/C a 23°C. ";
+          msg += "Activar A/C a 21°C. ";
         } else if (windowCount > 0) {
           msg += "Abrir ventanas y puerta para generar corriente de aire. ";
         } else {
@@ -32,26 +32,25 @@ export function getContextualRecommendation(alert, conditions) {
         if (studentsCount > 30) msg += "⚠️ Alta densidad biológica acelerando el calentamiento.";
         return msg.trim();
       } else {
-        if (hasAC) return "Baja temperatura. Activar calefacción del A/C y cerrar puerta.";
-        if (windowCount > 0) return "Baja temperatura. Cerrar ventanas y puerta para retener calor corporal.";
-        return "Baja temperatura. Mantener puerta cerrada para conservar el calor en la sala.";
+        if (hasAC) return "Baja temperatura. Activar calefacción del A/C y cerrar puerta para reducir el estrés térmico.";
+        if (windowCount > 0) return "Baja temperatura. Cerrar ventanas y puerta para retener calor y mejorar la concentración.";
+        return "Baja temperatura. Mantener puerta cerrada; el frío desvía recursos metabólicos y reduce la satisfacción térmica.";
       }
 
     // --- HUMEDAD ---
     case key.includes('humedad'):
       if (alert.high) {
-        if (hasAC) return "Alta humedad. Activar A/C en modo Deshumidificador (Dry).";
-        if (windowCount > 0) return "Alta humedad. Abrir ventanas y puerta para facilitar el escape de vapor.";
-        // Si no hay ventanas (windowCount === 0), la puerta es la única salvación:
+        if (hasAC) return "Alta humedad. Activar A/C en modo Deshumidificador (Dry) para evitar moho y carga térmica.";
+        if (windowCount > 0) return "Alta humedad. Abrir ventanas y puerta para facilitar la evaporación del sudor.";
         return "Alta humedad. Abrir puerta principal y encender extractores de aire.";
       }
-      return "Humedad muy baja. Evitar corrientes de aire cerrando puerta y ventanas para no resecar vías respiratorias.";
+      return "Humedad muy baja. Cerrar puerta y ventanas para evitar resecar vías respiratorias y ojos.";
 
     // --- RUIDO ---
     case key.includes('db') || key.includes('ruido'):
-      if (windowCount > 0) return "Contaminación acústica. Cerrar ventanas y puerta para aislar el ruido externo.";
-      if (windowCount ==0) return "Contaminación acústica, Cerrar puerta para aislar el ruido externo"
-      return "Contaminación acústica interna. Solicitar silencio a la clase y mantener puerta cerrada hacia el pasillo.";
+      if (!alert.high) return "";
+      if (windowCount > 0) return "Ruido por encima de 45 dBA. Cerrar ventanas y puerta para aislar el ruido externo.";
+      return "Ruido por encima de 45 dBA. Solicitar silencio a la clase y mantener puerta cerrada hacia el pasillo.";
 
     // --- ILUMINACIÓN ---
     case key.includes('lux') || key.includes('iluminación'):

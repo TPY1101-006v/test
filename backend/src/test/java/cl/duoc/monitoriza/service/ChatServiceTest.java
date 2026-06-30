@@ -74,6 +74,17 @@ class ChatServiceTest {
     }
 
     @Test
+    void chatDesactivadoLanzaError() {
+        ChatService desactivado = new ChatService(
+                geminiService, chatContextBuilder, chatRateLimiter, false, 30, 3);
+
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> desactivado.responder("¿Qué es CO2?"));
+        assertTrue(ex.getMessage().contains("desactivado"));
+    }
+
+    @Test
     void limiteDiarioAlcanzado() {
         ChatService limitado = new ChatService(
                 geminiService, chatContextBuilder, chatRateLimiter, true, 1, 3);

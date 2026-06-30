@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import cl.duoc.monitoriza.dto.AlteracionSensorDto;
 import cl.duoc.monitoriza.dto.BloqueMedicionDto;
+import cl.duoc.monitoriza.dto.EstadisticaSensorDto;
 import cl.duoc.monitoriza.dto.LecturaInformeDto;
 import cl.duoc.monitoriza.dto.ResumenDiaDto;
 import cl.duoc.monitoriza.dto.SalaInformeDto;
@@ -38,7 +39,7 @@ public class ResumenDiaService {
 
     public ResumenDiaDto construirResumen(LocalDate fecha) {
         if (!HorarioEscolarUtil.esDiaHabil(fecha)) {
-            throw new IllegalArgumentException("La fecha no es día hábil: " + fecha);
+            return resumenDiaNoHabil(fecha);
         }
 
         List<Medicion> delDia = medicionService.medicionesDelDia(fecha);
@@ -46,7 +47,9 @@ public class ResumenDiaService {
 
         ResumenDiaDto resumen = new ResumenDiaDto();
         resumen.setFecha(fecha);
+        resumen.setDiaHabil(true);
         resumen.setTotalLecturasJornada(delDia.size());
+        resumen.setEstadisticas(calcularEstadisticas(delDia));
         resumen.setSala(obtenerSalaInforme());
 
         int totalClase = 0;
@@ -140,6 +143,61 @@ public class ResumenDiaService {
         contarAlteracionesPorLectura(delDia, resumen.getAlteracionesJornada());
 
         return resumen;
+    }
+
+    private ResumenDiaDto resumenDiaNoHabil(LocalDate fecha) {
+        ResumenDiaDto vacio = new ResumenDiaDto();
+        vacio.setFecha(fecha);
+        vacio.setDiaHabil(false);
+        vacio.setMensaje("La fecha no es día hábil escolar (lunes a viernes).");
+        vacio.setEstadisticas(List.of());
+        return vacio;
+    }
+
+    private List<EstadisticaSensorDto> calcularEstadisticas(List<Medicion> lecturas) {
+        if (lecturas.isEmpty()) {
+            return List.of();
+        }
+        return List.of(
+                estadisticaSensor(Sensor.TEMPERATURA, lecturas, 1),
+                estadisticaSensor(Sensor.HUMEDAD, lecturas, 1),
+                estadisticaSensor(Sensor.DB, lecturas, 1),
+                estadisticaSensor(Sensor.LUX, lecturas, 0),
+                estadisticaSensor(Sensor.ECO2, lecturas, 0),
+                estadisticaSensor(Sensor.TVOC, lecturas, 0)
+        );
+    }
+
+    private EstadisticaSensorDto estadisticaSensor(Sensor sensor, List<Medicion> lecturas, int decimales) {
+        List<Double> valores = lecturas.stream()
+                .map(m -> RangosAmbientalesUtil.obtenerValor(m, sensor))
+                .filter(v -> v != null)
+                .toList();
+
+        EstadisticaSensorDto dto = new EstadisticaSensorDto();
+        dto.setSensor(sensor.getEtiqueta());
+        dto.setUnidad(sensor.getUnidad());
+
+        if (valores.isEmpty()) {
+            return dto;
+        }
+
+        double min = valores.stream().mapToDouble(Double::doubleValue).min().orElse(Double.NaN);
+        double max = valores.stream().mapToDouble(Double::doubleValue).max().orElse(Double.NaN);
+        double avg = valores.stream().mapToDouble(Double::doubleValue).average().orElse(Double.NaN);
+
+        dto.setMinimo(redondear(min, decimales));
+        dto.setMaximo(redondear(max, decimales));
+        dto.setPromedio(redondear(avg, decimales));
+        return dto;
+    }
+
+    private double redondear(double valor, int decimales) {
+        if (Double.isNaN(valor)) {
+            return Double.NaN;
+        }
+        double factor = Math.pow(10, decimales);
+        return Math.round(valor * factor) / factor;
     }
 
     private void contarAlteracionesPorLectura(List<Medicion> lecturas, List<AlteracionSensorDto> destino) {

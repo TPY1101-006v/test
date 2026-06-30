@@ -338,9 +338,9 @@ public class DataInitializer implements CommandLineRunner {
 
 
 
-        double temperatura = redondear1(23.6 + (hora - 8) * 0.12 + ruido(random, -0.4, 0.4));
+        double temperatura = redondear1(21.0 + (hora - 8) * 0.08 + ruido(random, -0.4, 0.4));
 
-        double humedad = redondear1(38.0 + factorClase * ruido(random, 0, 8) + ruido(random, -2, 2));
+        double humedad = redondear1(50.0 + factorClase * ruido(random, 0, 8) + ruido(random, -2, 2));
 
         double db = redondear1(32.0 + factorClase * ruido(random, 0, 14));
 
@@ -380,17 +380,17 @@ public class DataInitializer implements CommandLineRunner {
 
         switch (tipo) {
 
-            case 0 -> temperatura = redondear1(27.0 + ruido(random, 0, 1.5));
+            case 0 -> temperatura = redondear1(23.5 + ruido(random, 0, 1.5));
 
-            case 1 -> humedad = redondear1(51.0 + ruido(random, 0, 4));
+            case 1 -> humedad = redondear1(62.0 + ruido(random, 0, 4));
 
-            case 2 -> db = redondear1(52.0 + ruido(random, 0, 6));
+            case 2 -> db = redondear1(48.0 + ruido(random, 0, 6));
 
             case 3 -> lux = Math.round(250 + ruido(random, 0, 40));
 
             case 4 -> eco2 = Math.round(820 + ruido(random, 0, 120));
 
-            case 5 -> tvoc = Math.round(550 + ruido(random, 0, 100));
+            case 5 -> tvoc = Math.round(250 + ruido(random, 0, 100));
 
         }
 

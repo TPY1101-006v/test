@@ -6,9 +6,12 @@ import java.util.List;
 
 public class ResumenDiaDto {
     private LocalDate fecha;
+    private boolean diaHabil;
+    private String mensaje;
     private int totalLecturasJornada;
     private int totalLecturasClase;
     private SalaInformeDto sala;
+    private List<EstadisticaSensorDto> estadisticas = new ArrayList<>();
     private List<BloqueMedicionDto> bloques = new ArrayList<>();
     /** Conteo por bloque de clase (legacy / referencia) */
     private List<AlteracionSensorDto> alteraciones = new ArrayList<>();
@@ -20,6 +23,12 @@ public class ResumenDiaDto {
     public LocalDate getFecha() { return fecha; }
     public void setFecha(LocalDate fecha) { this.fecha = fecha; }
 
+    public boolean isDiaHabil() { return diaHabil; }
+    public void setDiaHabil(boolean diaHabil) { this.diaHabil = diaHabil; }
+
+    public String getMensaje() { return mensaje; }
+    public void setMensaje(String mensaje) { this.mensaje = mensaje; }
+
     public int getTotalLecturasJornada() { return totalLecturasJornada; }
     public void setTotalLecturasJornada(int totalLecturasJornada) { this.totalLecturasJornada = totalLecturasJornada; }
 
@@ -28,6 +37,9 @@ public class ResumenDiaDto {
 
     public SalaInformeDto getSala() { return sala; }
     public void setSala(SalaInformeDto sala) { this.sala = sala; }
+
+    public List<EstadisticaSensorDto> getEstadisticas() { return estadisticas; }
+    public void setEstadisticas(List<EstadisticaSensorDto> estadisticas) { this.estadisticas = estadisticas; }
 
     public List<BloqueMedicionDto> getBloques() { return bloques; }
     public void setBloques(List<BloqueMedicionDto> bloques) { this.bloques = bloques; }

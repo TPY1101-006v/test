@@ -1,0 +1,305 @@
+{
+  "info": {
+    "name": "Monitoriza - API completa",
+    "description": "Colección de pruebas para los endpoints de Monitoriza. Base URL configurable via variable baseUrl.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "fechaHabil", "value": "2026-06-17" },
+    { "key": "fechaNoHabil", "value": "2026-06-20" },
+    { "key": "salaId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "1. GET /mediciones/ultimas",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/mediciones/ultimas",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mediciones", "ultimas"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('es un array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. POST /mediciones",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"temperatura\": 21.5,\n  \"humedad\": 48.0,\n  \"db\": 40.0,\n  \"lux\": 350,\n  \"eco2\": 600,\n  \"tvoc\": 150\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/mediciones",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mediciones"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('devuelve id', () => pm.expect(j).to.have.property('idMedicion'));",
+              "pm.test('conserva temperatura', () => pm.expect(j.temperatura).to.eql(21.5));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. GET /mediciones/por-dia",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/mediciones/por-dia?fecha={{fechaHabil}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mediciones", "por-dia"],
+          "query": [{ "key": "fecha", "value": "{{fechaHabil}}" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('campos esperados', () => {",
+              "  pm.expect(j).to.have.property('fecha');",
+              "  pm.expect(j).to.have.property('diaHabil');",
+              "  pm.expect(j).to.have.property('totalJornada');",
+              "  pm.expect(j).to.have.property('totalBloquesClase');",
+              "  pm.expect(j).to.have.property('conteoPorBloque');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. GET /mediciones/resumen-dia (habil)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/mediciones/resumen-dia?fecha={{fechaHabil}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mediciones", "resumen-dia"],
+          "query": [{ "key": "fecha", "value": "{{fechaHabil}}" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('diaHabil true', () => pm.expect(j.diaHabil).to.eql(true));",
+              "pm.test('estadisticas es array', () => pm.expect(j.estadisticas).to.be.an('array'));",
+              "pm.test('si hay datos, min/max/promedio presentes', () => {",
+              "  if (j.estadisticas.length > 0) {",
+              "    const s = j.estadisticas[0];",
+              "    pm.expect(s).to.have.all.keys('sensor','unidad','minimo','maximo','promedio');",
+              "  }",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4b. GET /mediciones/resumen-dia (no habil)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/mediciones/resumen-dia?fecha={{fechaNoHabil}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mediciones", "resumen-dia"],
+          "query": [{ "key": "fecha", "value": "{{fechaNoHabil}}" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('diaHabil false', () => pm.expect(j.diaHabil).to.eql(false));",
+              "pm.test('estadisticas vacias', () => pm.expect(j.estadisticas.length).to.eql(0));",
+              "pm.test('tiene mensaje', () => pm.expect(j.mensaje).to.be.a('string'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. GET /alertas",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/alertas",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "alertas"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('es array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+              "pm.test('maximo 15', () => pm.expect(pm.response.json().length).to.be.at.most(15));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. POST /alertas",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sensor\": \"Temperatura\",\n  \"value\": 27.5,\n  \"unit\": \"\u00b0C\",\n  \"high\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/alertas",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "alertas"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('devuelve id', () => pm.expect(j).to.have.property('id'));",
+              "pm.test('time autogenerado', () => pm.expect(j.time).to.be.a('string'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. GET /salas",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/salas",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "salas"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('es array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. PUT /salas/{id}",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Sala 101\",\n  \"m2\": 50.0,\n  \"cantidadEstudiantes\": 30,\n  \"cantidadVentanas\": 4,\n  \"aireAcondicionado\": \"true\",\n  \"tipoDeVentilacion\": \"cruzada\",\n  \"numeroPiso\": 1\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/salas/{{salaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "salas", "{{salaId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('nombre actualizado', () => pm.expect(j.nombre).to.eql('Sala 101'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. GET /report (CSV)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/report",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "report"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('es CSV', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('csv'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. GET /report/info",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/report/info",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "report", "info"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('campos esperados', () => {",
+              "  pm.expect(j).to.have.property('totalMediciones');",
+              "  pm.expect(j).to.have.property('fechaDesde');",
+              "  pm.expect(j).to.have.property('fechaHasta');",
+              "  pm.expect(j).to.have.property('descripcion');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -231,7 +231,7 @@ class InformePdfServiceTest {
         l1.setTitulo("Instalar aire acondicionado");
         l1.setIndicadores(List.of("Temperatura", "Humedad"));
         l1.setExplicacion(
-                "Permitiria mantener 23-26 °C de forma estable en verano, mejorando confort y rendimiento cognitivo "
+                "Permitiria mantener 20-22 °C de forma estable en verano, mejorando confort y rendimiento cognitivo "
                 + "en una sala con alta densidad de estudiantes.");
 
         SolucionDetalleDto l2 = new SolucionDetalleDto();

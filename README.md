@@ -208,12 +208,12 @@ El tier gratuito de Gemini tiene límites de solicitudes por minuto (RPM). El pr
 
 | Sensor | Unidad | Rango ideal |
 |--------|--------|-------------|
-| Temperatura | °C | 23 – 26 |
-| Humedad | % | 35 – 50 |
-| Decibeles | dB | 30 – 50 |
+| Temperatura | °C | 20 – 22 |
+| Humedad | % | 40 – 60 |
+| Decibeles | dBA | ≤ 45 (referencia: ≤ 35 vacía) |
 | Iluminación | lx | 300 – 500 |
 | CO₂ | ppm | 400 – 800 |
-| TVOC | ppb | 0 – 500 |
+| TVOC | ppb | 0 – 220 |
 
 ### Funcionalidades principales
 
@@ -272,6 +272,71 @@ Archivo principal: `backend/src/main/resources/application.properties`
 | `gemini.model` | Modelo de IA | `gemini-2.5-flash` |
 
 > **Producción:** cambia `ddl-auto` a `validate` o `update` y desactiva el simulador cuando conectes un ESP8266 real vía `POST /api/mediciones`.
+
+### Activar o desactivar tareas programadas (schedulers)
+
+El backend usa **Spring `@Scheduled`** para generar datos automáticamente. Cada tarea se controla con una propiedad en `application.properties`. Pon `true` para activarla o `false` para desactivarla; **reinicia el backend** después de cambiar el valor.
+
+| Propiedad | Clase | Qué hace | Cuándo se ejecuta | Valor por defecto |
+|-----------|-------|----------|-------------------|-------------------|
+| `app.simulador.mediciones.enabled` | `MedicionSimuladorScheduler` | Inserta una medición ficticia en la BD | Cada **5 minutos** mientras el backend está en marcha | `true` |
+| `app.informe.diario.enabled` | `InformeDiarioScheduler` | Genera el informe PDF del día con IA | **16:35**, lunes a viernes | `true` |
+
+#### Ejemplo: desactivar simulador (ESP8266 real)
+
+Edita `backend/src/main/resources/application.properties`:
+
+```properties
+app.simulador.mediciones.enabled=false
+```
+
+O pásalo al arrancar sin editar el archivo (variable de entorno, funciona en Windows y macOS/Linux):
+
+```powershell
+# Windows (PowerShell)
+$env:APP_SIMULADOR_MEDICIONES_ENABLED="false"
+.\mvnw.cmd spring-boot:run
+```
+
+```bash
+# macOS / Linux
+export APP_SIMULADOR_MEDICIONES_ENABLED=false
+./mvnw spring-boot:run
+```
+
+#### Ejemplo: desactivar informe diario automático
+
+```properties
+app.informe.diario.enabled=false
+```
+
+Útil si solo quieres generar informes manualmente desde la API o al arrancar con el seed histórico.
+
+#### Generación al arrancar (no es `@Scheduled`, pero relacionada)
+
+Estas opciones corren **una vez** al iniciar la aplicación (`DataInitializer`), no en intervalos:
+
+| Propiedad | Qué hace | Valor por defecto |
+|-----------|----------|-------------------|
+| `app.seed.historico.enabled` | Rellena ~1 mes de mediciones de prueba si la tabla está vacía | `true` |
+| `app.seed.informes.enabled` | Genera informes históricos con IA para los días del seed | `true` |
+
+Para arrancar con BD limpia sin datos ni informes de prueba:
+
+```properties
+app.seed.historico.enabled=false
+app.seed.informes.enabled=false
+```
+
+#### Escenarios recomendados
+
+| Escenario | Simulador | Informe diario | Seed histórico | Seed informes |
+|-----------|-----------|----------------|----------------|---------------|
+| Desarrollo / demo local | `true` | `true` | `true` | `true` |
+| ESP8266 real en producción | `false` | `true` | `false` | `false` |
+| Solo consultar API sin generar datos | `false` | `false` | `false` | `false` |
+
+> **Nota:** aunque desactives una tarea, el scheduler sigue registrado en Spring; la propiedad en `false` hace que el método **salga sin ejecutar** la generación. En consola verás mensajes como `[Simulador] Medición guardada...` solo cuando el simulador está activo.
 
 ---
 
