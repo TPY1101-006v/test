@@ -14,19 +14,33 @@ export default function SensorCard({ sensorKey, value }) {
 
   const fmt = formatVal(sensorKey, value)
   
-  const estado = (value !== undefined && value !== null) 
-    ? severity(sensorKey, value) 
-    : 'ok'
+  // ✨ 1. LÓGICA DE CALIBRACIÓN: Detectar valores negativos en sensores estrictos
+  const sensoresEstrictos = ['eco2', 'tvoc', 'lux', 'humedad', 'ruido'];
+  const esNegativo = value !== undefined && value !== null && value < 0 && sensoresEstrictos.includes(sensorKey);
+
+  // ✨ 2. EVALUACIÓN DE ESTADO: Calibración tiene prioridad sobre severity
+  let estado = 'ok';
+  if (esNegativo) {
+    estado = 'calibracion';
+  } else if (value !== undefined && value !== null) {
+    estado = severity(sensorKey, value);
+  }
 
   // Variables por defecto (Todo está normal)
   let cardStyle = styles.ok;
   let statusStyle = styles.statusOk;
-  // ✨ CAMBIO AQUÍ: Usamos el color de texto normal de tu tema (o blanco) en lugar de sensor.color
   let colorNumero = 'var(--text, #ffffff)'; 
   let textoEstado = '✓ NORMAL';
 
+  // ✨ 3. ASIGNACIÓN DE ESTILOS SEGÚN EL ESTADO
+  if (estado === 'calibracion') {
+    cardStyle = styles.calibration;         // Nuevo estilo CSS
+    statusStyle = styles.statusCalibration; // Nuevo estilo CSS
+    colorNumero = '#a855f7';                // Morado para destacar el error técnico
+    textoEstado = '🔧 CALIBRAR';
+  } 
   // Si supera el umbral crítico
-  if (estado === 'critica') {
+  else if (estado === 'critica') {
     cardStyle = styles.critical; 
     statusStyle = styles.statusCritical;
     colorNumero = '#ef4444'; // Rojo

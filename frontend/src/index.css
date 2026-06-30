@@ -1,5 +1,10 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+}
 
+/* 🌙 TEMA OSCURO (Tu diseño intacto) */
 :root {
   --bg: #0f1117;
   --surface: #171b26;
@@ -17,6 +22,33 @@
   --radius: 14px;
   --radius-sm: 8px;
   --radius-pill: 20px;
+
+  /* ✨ NUEVO: Variables para que alertas y botones no se vean feos */
+  --bg-alerta: rgba(246, 173, 85, 0.10); /* Tu naranja transparente original */
+  --bg-critica: rgba(252, 129, 129, 0.12); /* Tu rojo transparente original */
+  --btn-active: #1e2333; /* Tu azul oscuro original para el botón seleccionado */
+}
+
+/* ☀️ TEMA CLARO */
+[data-theme='light'] {
+  --bg: #f0f4f8;         
+  --surface: #e2e8f0;    
+  --card: #ffffff;       
+  --border: rgba(0, 0, 0, 0.1); 
+  --border-glow: rgba(49, 130, 206, 0.3);
+  
+  --accent: #2b6cb0;     
+  --accent2: #2f855a;    
+  --accent3: #793e16;    
+  --warn: #e53e3e;       
+  
+  --text: #1a202c;       
+  --muted: #4a5568;      
+
+  /* ✨ NUEVO: Fondos pastel puros y limpios (cero efecto "sucio") */
+  --bg-alerta: #f4efef;  /* Naranja pastel muy limpio */
+  --bg-critica: #f5f5f5; /* Rojo pastel muy limpio */
+  --btn-active: #eae0e0; /* El botón seleccionado será blanco puro brillante */
 }
 
 body {
@@ -25,9 +57,16 @@ body {
   font-family: var(--sans);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.4s ease, color 0.4s ease; 
 }
 
-input, select, button, textarea { font-family: var(--sans); }
+input, select, button, textarea { 
+  font-family: var(--sans); 
+}
+
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb { 
+  background: var(--border); 
+  border-radius: 2px; 
+}
