@@ -10,41 +10,81 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
+/* ==========================================================
+   Imagen del logo
 
+   Solo es necesario reemplazar /public/logo.png cuando
+   exista el logo definitivo.
+========================================================== */
+
+.logoImage {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+}
 .logoIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(99,179,237,0.1);
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(99,179,237,.18),
+    rgba(99,179,237,.06)
+  );
+
   border: 1px solid var(--border-glow);
+
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+
+  transition: .25s ease;
+
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.08);
+}
+
+.logoIcon:hover{
+  transform: translateY(-1px);
+}
+
+.logoIcon span{
+  font-size:28px;
+  color:var(--accent);
+}
+
+/* Preparado para el logo definitivo */
+
+.logoImage{
+  width:48px;
+  height:48px;
+  object-fit:contain;
 }
 
 .logoText {
   font-family: var(--mono);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--text);
-  letter-spacing: -0.5px;
+  letter-spacing: -.6px;
 }
 
 .logoSub {
   font-size: 11px;
   color: var(--muted);
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  margin-top: 1px;
+  margin-top: 3px;
 }
 
 .right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .statusDot {
@@ -56,33 +96,47 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+  0%,100%{
+    opacity:1;
+  }
+
+  50%{
+    opacity:.35;
+  }
 }
 
 .statusLabel {
   font-size: 12px;
   color: var(--muted);
   font-family: var(--mono);
+  letter-spacing: .8px;
 }
 
 .burgerBtn {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
+
   border-radius: 10px;
+
   background: var(--card);
-  border: 0.5px solid var(--border);
+
+  border: .5px solid var(--border);
+
   cursor: pointer;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   gap: 4px;
-  transition: border-color 0.2s;
+
+  transition: .25s;
 }
 
 .burgerBtn:hover {
   border-color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .burgerBtn span {
@@ -90,5 +144,5 @@
   width: 16px;
   height: 1.5px;
   background: var(--text);
-  border-radius: 2px;
+  border-radius: 10px;
 }

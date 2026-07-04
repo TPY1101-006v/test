@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { fetchSensorData } from '../utils/api'
-import { SENSORS, UPDATE_INTERVAL, isOutOfRange, severity } from '../utils/constants'
+import { SENSORS, UPDATE_INTERVAL, isOutOfRange, severity, formatSensorValue, roundSensorValue } from '../utils/constants'
 
 const MAX_ALERTS = 50
 const RETRY_SECONDS = 5
@@ -17,13 +17,14 @@ function buildAlerts(latest, lastFechaHora, prevSnapshot) {
     if (!isOutOfRange(s.key, v)) return
     if (prevSnapshot && prevSnapshot[s.key] === v) return // Evita duplicados si es el mismo valor
     
+    const rounded = roundSensorValue(s.key, v)
     nuevas.push({
       id:        `${lastFechaHora}-${s.key}`,
       sensor:    s.label,
       sensorKey: s.key,
-      value:     s.key === 'lux' || s.key === 'eco2' ? Math.round(v) : Number(v).toFixed(1),
+      value:     formatSensorValue(s.key, v),
       unit:      s.unit,
-      high:      v > s.max,
+      high:      rounded > s.max,
       severity:  severity(s.key, v),
       time,
       range:     `${s.min}–${s.max} ${s.unit}`,
@@ -93,11 +94,11 @@ export function useSensors() {
     .map(({ sensor, value }) => ({
       sensorKey: sensor.key,
       label:     sensor.label,
-      value:     sensor.key === 'lux' || sensor.key === 'eco2' ? Math.round(value) : Number(value).toFixed(1),
+      value:     formatSensorValue(sensor.key, value),
       unit:      sensor.unit,
       range:     `${sensor.min}–${sensor.max} ${sensor.unit}`,
       severity:  severity(sensor.key, value),
-      high:      value > sensor.max,
+      high:      roundSensorValue(sensor.key, value) > sensor.max,
     }))
 
   return { values, history, alerts, activeAlerts, countdown, loading, isOutOfRange }

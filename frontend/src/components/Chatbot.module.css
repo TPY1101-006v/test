@@ -14,6 +14,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--text);
 }
 
 .badge {
@@ -43,6 +44,9 @@
   border-radius: 10px;
   max-width: 90%;
   white-space: pre-wrap;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .bot {
@@ -59,12 +63,19 @@
   align-self: flex-end;
 }
 
+.msgText {
+  white-space: pre-wrap;
+}
+
 .typing {
   font-size: 12px;
   color: var(--muted);
   font-style: italic;
   padding: 4px 8px;
   align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .suggestions {
@@ -82,12 +93,16 @@
   border: 0.5px solid var(--border);
   background: var(--surface);
   color: var(--text);
-  transition: border-color 0.2s, color 0.2s;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .sugBtn:hover {
   border-color: var(--accent);
   color: var(--accent);
+  background: rgba(99,179,237,0.08);
 }
 
 .inputRow {
@@ -107,11 +122,17 @@
   transition: border-color 0.2s;
 }
 
-.input:focus { border-color: var(--accent); }
-.input:disabled { opacity: 0.5; cursor: not-allowed; }
+.input:focus {
+  border-color: var(--accent);
+}
+
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .sendBtn {
-  padding: 9px 18px;
+  padding: 9px 16px;
   background: var(--accent);
   color: #0f1117;
   border: none;
@@ -120,7 +141,86 @@
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-.sendBtn:hover:not(:disabled) { opacity: 0.85; }
+.sendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sendBtn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+/* Material Symbols */
+.titleIcon,
+.msgIcon,
+.typingIcon,
+.sugIcon,
+.sendIcon {
+  font-family: 'Material Symbols Outlined' !important;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 500,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+.titleIcon {
+  font-size: 20px;
+  color: var(--accent);
+}
+
+.msgIcon {
+  font-size: 17px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.bot .msgIcon {
+  color: var(--accent);
+}
+
+.user .msgIcon {
+  color: var(--muted);
+}
+
+.typingIcon {
+  font-size: 18px;
+}
+
+.sugIcon {
+  font-size: 16px;
+}
+
+.sendIcon {
+  font-size: 16px;
+}
+
+@media (max-width: 640px) {
+  .inputRow {
+    flex-direction: column;
+  }
+
+  .sendBtn {
+    justify-content: center;
+  }
+
+  .msg {
+    max-width: 100%;
+  }
+}

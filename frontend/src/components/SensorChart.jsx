@@ -80,7 +80,6 @@ export default function SensorChart({ history }) {
             />
             <ReferenceLine
               y={sensor.ideal}
-              stroke="#f6ad55"
               strokeDasharray="6 4"
               strokeWidth={1.5}
             />

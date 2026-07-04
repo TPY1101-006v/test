@@ -4,8 +4,7 @@
   padding: 0; 
 }
 
-/* 🌙 TEMA OSCURO (Tu diseño intacto) */
-:root {
+:root { 
   --bg: #0f1117;
   --surface: #171b26;
   --card: #1e2333;
@@ -23,10 +22,9 @@
   --radius-sm: 8px;
   --radius-pill: 20px;
 
-  /* ✨ NUEVO: Variables para que alertas y botones no se vean feos */
-  --bg-alerta: rgba(246, 173, 85, 0.10); /* Tu naranja transparente original */
-  --bg-critica: rgba(252, 129, 129, 0.12); /* Tu rojo transparente original */
-  --btn-active: #1e2333; /* Tu azul oscuro original para el botón seleccionado */
+  --bg-alerta: rgba(246, 173, 85, 0.10);
+  --bg-critica: rgba(252, 129, 129, 0.12);
+  --btn-active: #1e2333;
 }
 
 /* ☀️ TEMA CLARO */
@@ -45,10 +43,9 @@
   --text: #1a202c;       
   --muted: #4a5568;      
 
-  /* ✨ NUEVO: Fondos pastel puros y limpios (cero efecto "sucio") */
-  --bg-alerta: #f4efef;  /* Naranja pastel muy limpio */
-  --bg-critica: #f5f5f5; /* Rojo pastel muy limpio */
-  --btn-active: #eae0e0; /* El botón seleccionado será blanco puro brillante */
+  --bg-alerta: #f4efef;
+  --bg-critica: #f5f5f5;
+  --btn-active: #eae0e0;
 }
 
 body {
@@ -64,8 +61,46 @@ input, select, button, textarea {
   font-family: var(--sans); 
 }
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
+/* ==========================================================
+   GOOGLE MATERIAL SYMBOLS
+
+   Esto fuerza que los nombres como "warning", "light_mode",
+   "device_thermostat", etc. se rendericen como iconos.
+========================================================== */
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+::-webkit-scrollbar { 
+  width: 4px; 
+}
+
+::-webkit-scrollbar-track { 
+  background: transparent; 
+}
+
 ::-webkit-scrollbar-thumb { 
   background: var(--border); 
   border-radius: 2px; 
